@@ -1,0 +1,46 @@
+site_name: scikit-fem tutorial
+site_author: Amuthan A. Ramabathiran
+site_description: A hands-on tutorial for implementing the finite element method using the scikit-fem library.
+
+nav:
+  - Home: index.md
+  - A simple 1D example: ode2o.md
+  - Projection, interpolation, and probes: fefields.md
+  - 2D heat transfer: heat2d.md
+  - Plane stress problem: planestress.md 
+
+extra_javascript:
+  - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+  - mathjaxhelper.js
+
+markdown_extensions:
+  - mdx_math
+  - admonition
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - attr_list
+  - md_in_html
+
+theme:
+  name: 'material'
+  language: 'en'
+  palette:
+    primary: 'green'
+    accent: 'blue'
+  font:
+    text: 'Roboto'
+    code: 'Roboto Mono'
+  features:
+    - content.code.copy
+    - content.code.select
+
+plugins:
+  - search
+  - print-site
