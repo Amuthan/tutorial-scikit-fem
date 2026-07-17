@@ -1,0 +1,714 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A hands-on tutorial for implementing the finite element method using the scikit-fem library.">
+      
+      
+        <meta name="author" content="Amuthan A. Ramabathiran">
+      
+      
+      
+        <link rel="prev" href="../ode2o/">
+      
+      
+        <link rel="next" href="../heat2d/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.24">
+    
+    
+      
+        <title>Projection, interpolation, and probes - scikit-fem tutorial</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.6543a935.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../css/print-site.css">
+    
+      <link rel="stylesheet" href="../css/print-site-material.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#projection-interpolation-and-probes" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scikit-fem tutorial" class="md-header__button md-logo" aria-label="scikit-fem tutorial" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scikit-fem tutorial
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Projection, interpolation, and probes
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scikit-fem tutorial" class="md-nav__button md-logo" aria-label="scikit-fem tutorial" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    scikit-fem tutorial
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ode2o/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    A simple 1D example
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Projection, interpolation, and probes
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Projection, interpolation, and probes
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#interpolant-vs-projection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interpolant vs projection
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#skfembasisinterpolate-does-not-give-the-interpolant" class="md-nav__link">
+    <span class="md-ellipsis">
+      skfem.Basis.interpolate does not give the interpolant!
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#probes-compute-function-value-at-any-desird-point-in-the-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      Probes compute function value at any desird point in the domain
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../heat2d/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    2D heat transfer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../planestress/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Plane stress problem
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#interpolant-vs-projection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interpolant vs projection
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#skfembasisinterpolate-does-not-give-the-interpolant" class="md-nav__link">
+    <span class="md-ellipsis">
+      skfem.Basis.interpolate does not give the interpolant!
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#probes-compute-function-value-at-any-desird-point-in-the-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      Probes compute function value at any desird point in the domain
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="projection-interpolation-and-probes">Projection, Interpolation, and Probes</h1>
+<p>Before proceeding further, let us understand a bit more about how <code>scikit-fem</code> handles scalar fields over a given mesh. We will focus on three functions in particular that are very useful in applications.</p>
+<h2 id="interpolant-vs-projection">Interpolant vs projection</h2>
+<p>Suppose that we are given a function <span class="arithmatex">\(f(x) = \sin(2 \pi x)\)</span>. How do we represent it as an element of a <span class="arithmatex">\(P_1\)</span> finite element space over a mesh of the domain <span class="arithmatex">\((0,1)\)</span>? One option is to just <em>interpolate</em> it at the nodal locations of the mesh. The following code shows how to accomplish this with <code>scikit-fem</code>.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">import</span> <span class="nn">skfem</span> 
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">import</span> <span class="nn">skfem.visuals.matplotlib</span> <span class="k">as</span> <span class="nn">skplot</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span> 
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">mesh</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">MeshLine</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">elt</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">ElementLineP1</span><span class="p">()</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">Vh</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">Basis</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">elt</span><span class="p">)</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">f_interp</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">Vh</span><span class="o">.</span><span class="n">doflocs</span><span class="p">)</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="n">list_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="n">list_f</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">list_x</span><span class="p">[</span><span class="kc">None</span><span class="p">,:])</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">list_x</span><span class="p">,</span> <span class="n">list_f</span><span class="p">,</span> <span class="s1">&#39;b-&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="n">skplot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">Vh</span><span class="p">,</span> <span class="n">f_interp</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">())</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span></code></pre></div>
+<p>This should return a plot as shown below:
+<img alt="Interpolation of a function" src="../figures/f_interp.png" /></p>
+<div class="admonition info">
+<p class="admonition-title">Remark</p>
+<p>Note carefully that the function <code>f</code> defined above requires that the vector <code>x</code> is input in the <code>scikit-fem</code> format. This is the reason for the strange looking <code>list_f = f(list_x[None,:])</code>. Note that <code>list_x</code> is a 1D array of length 11. <code>list_x[None,:]</code> is a 2D array of shape 1 x 11, whose entries are identical to that of <code>list_x</code>, except for the shape change. The reason for implementing <code>f</code> to receive its argument <code>x</code> in the <code>scikit-fem</code> format will become clear soon, when we discuss the <em>projection</em> operation.</p>
+</div>
+<p>Mathematically, what we have accomplished here is called a <em>piecewise linear interpolation</em>. There are, however, other representatives of <span class="arithmatex">\(f\)</span> in the <span class="arithmatex">\(P_1\)</span> finite element space <span class="arithmatex">\(V_h\)</span>. For now, let us record the numerical values in <code>f_interp</code>.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">f_interp</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">array</span><span class="p">([</span> <span class="mf">0.000e+00</span><span class="p">,</span>  <span class="mf">5.878e-01</span><span class="p">,</span>  <span class="mf">9.511e-01</span><span class="p">,</span>  <span class="mf">9.511e-01</span><span class="p">,</span>  <span class="mf">5.878e-01</span><span class="p">,</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        <span class="mf">1.225e-16</span><span class="p">,</span> <span class="o">-</span><span class="mf">5.878e-01</span><span class="p">,</span> <span class="o">-</span><span class="mf">9.511e-01</span><span class="p">,</span> <span class="o">-</span><span class="mf">9.511e-01</span><span class="p">,</span> <span class="o">-</span><span class="mf">5.878e-01</span><span class="p">,</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>       <span class="o">-</span><span class="mf">2.449e-16</span><span class="p">])</span>
+</span></code></pre></div>
+<p>A <em>projection</em>, or more correctly an <em><span class="arithmatex">\(L_2\)</span> projection</em>, of a function <span class="arithmatex">\(f\)</span> onto a finite element space <span class="arithmatex">\(V_h\)</span> is defined as the function <span class="arithmatex">\(f_h \in V_h\)</span> such that 
+<script type="math/tex; mode=display">
+\int_0^1 f_h v \,dx = \int_0^1 f v \, dx,
+</script>
+for any choice of <span class="arithmatex">\(v \in V_h\)</span>. There is a rather straightforward way in which we can solve this problem using <code>scikit-fem</code>. Let us look at the direct approach first, followed by a very convenient shortcut that <code>scikit-fem</code> provides.</p>
+<p>Notice first that the equation <span class="arithmatex">\(\int_0^1 f_h v\,dx = \int_0^1 fv\,dx\)</span> is of the form <span class="arithmatex">\(a(u,v) = l(v)\)</span>. We can follow the same approach as in the previous example, except that there is no need to impose boundary conditions in the present case (since there are none). The following code snippet does the job---make sure you understand why!</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">def</span> <span class="nf">a_projection</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="k">return</span> <span class="n">fh</span><span class="o">*</span><span class="n">v</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">def</span> <span class="nf">l_projection</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">x</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">v</span> 
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">K_projection</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">asm</span><span class="p">(</span><span class="n">a_projection</span><span class="p">,</span> <span class="n">Vh</span><span class="p">)</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">F_projection</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">asm</span><span class="p">(</span><span class="n">l_projection</span><span class="p">,</span> <span class="n">Vh</span><span class="p">)</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="n">f_projection</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">K_projection</span><span class="p">,</span> <span class="n">F_projection</span><span class="p">)</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">list_x</span><span class="p">,</span> <span class="n">list_f</span><span class="p">,</span> <span class="s1">&#39;b-&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="n">skplot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">Vh</span><span class="p">,</span> <span class="n">f_projection</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">())</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span></code></pre></div>
+<p>This should produce the following output:</p>
+<p><img alt="L2 projection of a function onto a 1D finite element space" src="../figures/f_projection_explicit.png" /></p>
+<p>Let us also record the numerical value of the interpolated function.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">f_projection</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">array</span><span class="p">([</span> <span class="mf">4.193e-03</span><span class="p">,</span>  <span class="mf">6.063e-01</span><span class="p">,</span>  <span class="mf">9.831e-01</span><span class="p">,</span>  <span class="mf">9.828e-01</span><span class="p">,</span>  <span class="mf">6.075e-01</span><span class="p">,</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>        <span class="mf">1.943e-16</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.075e-01</span><span class="p">,</span> <span class="o">-</span><span class="mf">9.828e-01</span><span class="p">,</span> <span class="o">-</span><span class="mf">9.831e-01</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.063e-01</span><span class="p">,</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>       <span class="o">-</span><span class="mf">4.193e-03</span><span class="p">])</span>
+</span></code></pre></div>
+<p>A comparison of <code>f_projection</code> with <code>f_interp</code> shows us that these are not the same functions in the finite element space <span class="arithmatex">\(V_h\)</span>! A plot of these two functions is shown below to clarify this visually.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">list_x</span><span class="p">,</span> <span class="n">list_f</span><span class="p">,</span> <span class="s1">&#39;b-&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">skplot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">Vh</span><span class="p">,</span> <span class="n">f_interp</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">)</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">skplot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">Vh</span><span class="p">,</span> <span class="n">f_projection</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">())</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span></code></pre></div>
+<p>This should produce the following plot---the interpolant is shown in green and the projection is shown in red. It should be evident that these are distinct functions in the finite element space.</p>
+<p><img alt="Interpolant vs Projection in 1D" src="../figures/f_interp_projection.png" /></p>
+<p>There are several advantages of the projection operation and it is used widely in practice. For this reason, <code>scikit-fem</code> provides a very convenient <code>project</code> function attached to a <code>skfem.Basis</code> object. We could have thus computed the projection of <code>f</code> onto the finite element space <code>Vh</code> simply as follows.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">fh</span> <span class="o">=</span> <span class="n">Vh</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</span></code></pre></div>
+<p>To verify this, let us print the contents of <code>fh</code> and compare it with the explicitly computed projection values.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">fh</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">array</span><span class="p">([</span> <span class="mf">4.193e-03</span><span class="p">,</span>  <span class="mf">6.063e-01</span><span class="p">,</span>  <span class="mf">9.831e-01</span><span class="p">,</span>  <span class="mf">9.828e-01</span><span class="p">,</span>  <span class="mf">6.075e-01</span><span class="p">,</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>        <span class="mf">1.943e-16</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.075e-01</span><span class="p">,</span> <span class="o">-</span><span class="mf">9.828e-01</span><span class="p">,</span> <span class="o">-</span><span class="mf">9.831e-01</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.063e-01</span><span class="p">,</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>       <span class="o">-</span><span class="mf">4.193e-03</span><span class="p">])</span>
+</span></code></pre></div>
+<p>We see that <code>fh</code> is identical to <code>f_projection</code>. We will make extensive use of <code>skfem.Basis.project</code> to project various functions onto finite element spaces. </p>
+<p>To sum up, interpolating a function in a finite element space is not the same as projecting it onto the same space. These result in distinct functions. We will often use the projection operation, and <code>scikit-fem</code> provides a very convenient functionality to implement <span class="arithmatex">\(L_2\)</span> projections via the <code>skfem.Basis.project</code> method.</p>
+<h2 id="skfembasisinterpolate-does-not-give-the-interpolant"><code>skfem.Basis.interpolate</code> does not give the interpolant!</h2>
+<p>There is a very useful function provided by <code>scikit-fem</code> called <code>skfem.Basis.interpolate</code> that is associate with finite element space. But it <em>does not</em> produce an interpolant as discussed above. Rather, it has a very special meaning which is tied t a simple and elegant design choice in <code>scikit-fem</code>. Until this point, we have looked at <code>numpy.ndarray</code> arrays that are associated with finite element spaces. For instance, the array <code>fh</code> defined by <code>fh = Vh.projec(f)</code> <em>lives on the nodes</em> of the finite element mesh. For the assembly process, however, it is useful to compute the values of the functions belonging to the finite element space at the quadrature locations in each element, along with other useful information like its gradient, hessian, etc. This is what <code>skfem.Basis.interpolate</code> does. Let us look at this more closely.</p>
+<p>Recall that <code>scikit-fem</code> automatically chooses a set of quadrature points when setting up an <code>skfem.Basis</code> object; we can also explicitly specify the quadrature points if necessary. For the <span class="arithmatex">\(P_1\)</span> finite element space <code>Vh</code> created above, we can easily compute the location of the quadrature points. The location of the quadrature points in the reference domain can be obtained as follows:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">Vh</span><span class="o">.</span><span class="n">quadrature</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="p">(</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.211</span><span class="p">,</span> <span class="mf">0.789</span><span class="p">]]),</span> <span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]))</span>
+</span></code></pre></div>
+<p>This tells us that the in the reference domain <span class="arithmatex">\([0,1]\)</span>, there are two quadrature points located at <span class="arithmatex">\(0.211\)</span> and <span class="arithmatex">\(0.789\)</span>, with corresponding weights both equal to <span class="arithmatex">\(1/2\)</span>. <code>scikit-fem</code> provides a simple means to map points in the reference domain to the physical domain via <code>skfem.Basis.mapping.F</code> function. This function takes as argument a list of points as a <code>numpy.ndarray</code> array of shape <code>(dim, npoints)</code>, where <code>dim</code> is the spatial dimension, and <code>npoints</code> is the number of points in the reference domain whose global images are sought. This function then returns a <code>numpy.ndarray</code> array of shape <code>(dim, nelt, npoints)</code>, where <code>nelt</code> is the number of elements in the finite element mesh, containing the image of the input points in teh reference domain in each element in the physical domain. </p>
+<p>Let us consider a simple example. For the mesh created earlier, there are 10 elements. The list of midpoints of each element is given by <span class="arithmatex">\([0.05, 0.15, \ldots, 0.95]\)</span>. Each of these points is the image of the point <span class="arithmatex">\(0.5\)</span> in the reference domain. To obtain this using <code>scikit-fem</code> we can do the following:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">Vh</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">F</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">]]))</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">array</span><span class="p">([[[</span><span class="mf">0.05</span><span class="p">],</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>        <span class="p">[</span><span class="mf">0.15</span><span class="p">],</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>        <span class="p">[</span><span class="mf">0.25</span><span class="p">],</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>        <span class="p">[</span><span class="mf">0.35</span><span class="p">],</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>        <span class="p">[</span><span class="mf">0.45</span><span class="p">],</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>        <span class="p">[</span><span class="mf">0.55</span><span class="p">],</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>        <span class="p">[</span><span class="mf">0.65</span><span class="p">],</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>        <span class="p">[</span><span class="mf">0.75</span><span class="p">],</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>        <span class="p">[</span><span class="mf">0.85</span><span class="p">],</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>        <span class="p">[</span><span class="mf">0.95</span><span class="p">]]])</span>
+</span></code></pre></div>
+<p>Note that this array is of shape <code>(1,10,1)</code>. To get the list of all the quadrature point locations in the physical domain, we can do the following:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">Vh</span><span class="o">.</span><span class="n">mapping</span><span class="o">.</span><span class="n">F</span><span class="p">(</span><span class="n">Vh</span><span class="o">.</span><span class="n">quadrature</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">array</span><span class="p">([[[</span><span class="mf">0.021</span><span class="p">,</span> <span class="mf">0.079</span><span class="p">],</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>        <span class="p">[</span><span class="mf">0.121</span><span class="p">,</span> <span class="mf">0.179</span><span class="p">],</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>        <span class="p">[</span><span class="mf">0.221</span><span class="p">,</span> <span class="mf">0.279</span><span class="p">],</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>        <span class="p">[</span><span class="mf">0.321</span><span class="p">,</span> <span class="mf">0.379</span><span class="p">],</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>        <span class="p">[</span><span class="mf">0.421</span><span class="p">,</span> <span class="mf">0.479</span><span class="p">],</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>        <span class="p">[</span><span class="mf">0.521</span><span class="p">,</span> <span class="mf">0.579</span><span class="p">],</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>        <span class="p">[</span><span class="mf">0.621</span><span class="p">,</span> <span class="mf">0.679</span><span class="p">],</span>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>        <span class="p">[</span><span class="mf">0.721</span><span class="p">,</span> <span class="mf">0.779</span><span class="p">],</span>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>        <span class="p">[</span><span class="mf">0.821</span><span class="p">,</span> <span class="mf">0.879</span><span class="p">],</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>        <span class="p">[</span><span class="mf">0.921</span><span class="p">,</span> <span class="mf">0.979</span><span class="p">]]])</span>
+</span></code></pre></div>
+<p>This array is of size <code>(1,10,2)</code>. This is the set of points that <code>skfem.Basis.interpolate</code> computes the value of any given function in the finite element space. For instance, let us consider the projection <code>fh</code> of the function <span class="arithmatex">\(f\)</span>. We can compute the value of this projected function at the global quadrature locations as follows:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">fh_g</span> <span class="o">=</span> <span class="n">Vh</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+</span></code></pre></div>
+<p>When we invoke the <code>interpolate</code> function, <code>scikit-fem</code> returns an object of type <code>skfem.DiscreteField</code> which does much more than just computing the values at the global quadrature points. To see what <code>scikit-fem</code> computes, let use the <code>astuple</code> attribute to list the contents of this object:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">fh_g</span><span class="o">.</span><span class="n">astuple</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.131</span><span class="p">,</span>  <span class="mf">0.479</span><span class="p">],</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>        <span class="p">[</span> <span class="mf">0.686</span><span class="p">,</span>  <span class="mf">0.904</span><span class="p">],</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>        <span class="p">[</span> <span class="mf">0.983</span><span class="p">,</span>  <span class="mf">0.983</span><span class="p">],</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>        <span class="p">[</span> <span class="mf">0.903</span><span class="p">,</span>  <span class="mf">0.687</span><span class="p">],</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>        <span class="p">[</span> <span class="mf">0.479</span><span class="p">,</span>  <span class="mf">0.128</span><span class="p">],</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>        <span class="p">[</span><span class="o">-</span><span class="mf">0.128</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.479</span><span class="p">],</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>        <span class="p">[</span><span class="o">-</span><span class="mf">0.687</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.903</span><span class="p">],</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>        <span class="p">[</span><span class="o">-</span><span class="mf">0.983</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.983</span><span class="p">],</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>        <span class="p">[</span><span class="o">-</span><span class="mf">0.904</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.686</span><span class="p">],</span>
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>        <span class="p">[</span><span class="o">-</span><span class="mf">0.479</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.131</span><span class="p">]]),</span>
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a> <span class="n">array</span><span class="p">([[[</span> <span class="mf">6.021e+00</span><span class="p">,</span>  <span class="mf">6.021e+00</span><span class="p">],</span>
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>         <span class="p">[</span> <span class="mf">3.768e+00</span><span class="p">,</span>  <span class="mf">3.768e+00</span><span class="p">],</span>
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>         <span class="p">[</span><span class="o">-</span><span class="mf">3.812e-03</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.812e-03</span><span class="p">],</span>
+</span><span id="__span-11-15"><a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>         <span class="p">[</span><span class="o">-</span><span class="mf">3.753e+00</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.753e+00</span><span class="p">],</span>
+</span><span id="__span-11-16"><a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>         <span class="p">[</span><span class="o">-</span><span class="mf">6.075e+00</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.075e+00</span><span class="p">],</span>
+</span><span id="__span-11-17"><a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>         <span class="p">[</span><span class="o">-</span><span class="mf">6.075e+00</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.075e+00</span><span class="p">],</span>
+</span><span id="__span-11-18"><a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a>         <span class="p">[</span><span class="o">-</span><span class="mf">3.753e+00</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.753e+00</span><span class="p">],</span>
+</span><span id="__span-11-19"><a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a>         <span class="p">[</span><span class="o">-</span><span class="mf">3.812e-03</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.812e-03</span><span class="p">],</span>
+</span><span id="__span-11-20"><a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a>         <span class="p">[</span> <span class="mf">3.768e+00</span><span class="p">,</span>  <span class="mf">3.768e+00</span><span class="p">],</span>
+</span><span id="__span-11-21"><a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a>         <span class="p">[</span> <span class="mf">6.021e+00</span><span class="p">,</span>  <span class="mf">6.021e+00</span><span class="p">]]]),</span>
+</span><span id="__span-11-22"><a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-11-23"><a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-11-24"><a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-11-25"><a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-11-26"><a id="__codelineno-11-26" name="__codelineno-11-26" href="#__codelineno-11-26"></a> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-11-27"><a id="__codelineno-11-27" name="__codelineno-11-27" href="#__codelineno-11-27"></a> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-11-28"><a id="__codelineno-11-28" name="__codelineno-11-28" href="#__codelineno-11-28"></a> <span class="kc">None</span><span class="p">)</span>
+</span></code></pre></div>
+<p>The first element of the tuple contains the value of the projection of <span class="arithmatex">\(f\)</span> at the global quadrature points.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">fh_g</span><span class="o">.</span><span class="n">astuple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># == fh_g.value</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">array</span><span class="p">([[</span> <span class="mf">0.131</span><span class="p">,</span>  <span class="mf">0.479</span><span class="p">],</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>       <span class="p">[</span> <span class="mf">0.686</span><span class="p">,</span>  <span class="mf">0.904</span><span class="p">],</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>       <span class="p">[</span> <span class="mf">0.983</span><span class="p">,</span>  <span class="mf">0.983</span><span class="p">],</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>       <span class="p">[</span> <span class="mf">0.903</span><span class="p">,</span>  <span class="mf">0.687</span><span class="p">],</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>       <span class="p">[</span> <span class="mf">0.479</span><span class="p">,</span>  <span class="mf">0.128</span><span class="p">],</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>       <span class="p">[</span><span class="o">-</span><span class="mf">0.128</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.479</span><span class="p">],</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>       <span class="p">[</span><span class="o">-</span><span class="mf">0.687</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.903</span><span class="p">],</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>       <span class="p">[</span><span class="o">-</span><span class="mf">0.983</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.983</span><span class="p">],</span>
+</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>       <span class="p">[</span><span class="o">-</span><span class="mf">0.904</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.686</span><span class="p">],</span>
+</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>       <span class="p">[</span><span class="o">-</span><span class="mf">0.479</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.131</span><span class="p">]])</span>
+</span></code></pre></div>
+<p>We can also access these values more conveniently using <code>fh_g.value</code>.</p>
+<p>The second element of the tuple contains the gradient of the projection of <span class="arithmatex">\(f\)</span>, which in the present case is just its derivative, at the global quadrature locations.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">fh_g</span><span class="o">.</span><span class="n">astuple</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># == fh_g.grad</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="n">array</span><span class="p">([[[</span> <span class="mf">6.021e+00</span><span class="p">,</span>  <span class="mf">6.021e+00</span><span class="p">],</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>        <span class="p">[</span> <span class="mf">3.768e+00</span><span class="p">,</span>  <span class="mf">3.768e+00</span><span class="p">],</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>        <span class="p">[</span><span class="o">-</span><span class="mf">3.812e-03</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.812e-03</span><span class="p">],</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>        <span class="p">[</span><span class="o">-</span><span class="mf">3.753e+00</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.753e+00</span><span class="p">],</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>        <span class="p">[</span><span class="o">-</span><span class="mf">6.075e+00</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.075e+00</span><span class="p">],</span>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>        <span class="p">[</span><span class="o">-</span><span class="mf">6.075e+00</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.075e+00</span><span class="p">],</span>
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>        <span class="p">[</span><span class="o">-</span><span class="mf">3.753e+00</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.753e+00</span><span class="p">],</span>
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>        <span class="p">[</span><span class="o">-</span><span class="mf">3.812e-03</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.812e-03</span><span class="p">],</span>
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>        <span class="p">[</span> <span class="mf">3.768e+00</span><span class="p">,</span>  <span class="mf">3.768e+00</span><span class="p">],</span>
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>        <span class="p">[</span> <span class="mf">6.021e+00</span><span class="p">,</span>  <span class="mf">6.021e+00</span><span class="p">]]])</span>
+</span></code></pre></div>
+<p>We can access this more conveniently as <code>fh_g.grad</code>.</p>
+<p>For the moment, ignore the rest of the entries which return <code>None</code>. Objects of the type <code>DiscreteField</code> can also contain other information like divergence, curl, hessian, etc. depending on the nature of the projected function. We will learn more about this later.</p>
+<p>In case you are wondering how <code>scikit-fem</code> computes the value of the interpolated function and its gradient at the global quadrature points, recall that once we have a finite element space <span class="arithmatex">\(V_h\)</span>, we also have a natural means to compute the value and a function <span class="arithmatex">\(f_h \in V_h\)</span> at any point using the basis functions <span class="arithmatex">\((\phi_k)_{k=1}^N\)</span> as
+<script type="math/tex; mode=display">
+f_h(x) = \sum_{k=1}^N F_k \phi_k(x),
+</script>
+and its derivative as 
+<script type="math/tex; mode=display">
+f_h(x) = \sum_{k=1}^N F_k \phi_k'(x).
+</script>
+Here <span class="arithmatex">\((F_k)_{k=1}^N\)</span> denotes the values of the projected function at the degrees of freedom of the finite element mesh, which is the array <code>fh</code> in this context. The number <span class="arithmatex">\(N\)</span> here is the total number of degrees of freedom associated with the finite element space <span class="arithmatex">\(V_h\)</span>, which can be obtained using <code>Vh.N</code>. </p>
+<p>In summary, <code>skfem.Basis.interpolate</code> has little to do with the notion of an interpolant---the naming of this functionality in <code>scikit-fem</code> is arguably not an optimal one. Rather, it has a very specific meaning in <code>scikit-fem</code> and is used to create an object of the <code>skfem.DiscreteField</code> class. This object stores function value and its derivatives at the global quadrature points. This function is very useful in practice and is how we pass in context variables that are finite element functions when invoking <code>skfem.asm</code> during the assembly process. </p>
+<h2 id="probes-compute-function-value-at-any-desird-point-in-the-domain">Probes compute function value at any desird point in the domain</h2>
+<p>The <code>skfem.Basis.interpolate</code> function computes important quantities related to the function at the global quadrature points. How do we compute the value of a function in the finite element space at an arbitray point in the domain? This is what <code>skfem.Basis.probes</code> helps us compute.</p>
+<p>Suppose that we wish to compute the value of the finite element function in <code>Vh</code> whose degrees of freedom are given by <code>fh</code> at a collection of points <code>x_test</code>. The collection of points <code>x_test</code> need to be a <code>numpy.ndarray</code> array of shape <code>(dim, npoints)</code> where <code>dim</code> is the spatial dimension and <code>npoints</code> is the number of points at which the value of the finite element function is to be computed. We first compute a sparse matrix containing values of the basis functions at the collection of points <code>x_test</code> using the <code>skfem.Basis.probes</code> function, and subsequently perform a matrix multiplication of this matrix with the degrees of freedom vector <code>fh</code> to get the desired result. The following code illustrates this:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">x_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">]])</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">test_probes</span> <span class="o">=</span> <span class="n">Vh</span><span class="o">.</span><span class="n">probes</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">f_test</span> <span class="o">=</span> <span class="n">test_probes</span> <span class="o">@</span> <span class="n">fh</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">f_test</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="n">array</span><span class="p">([</span> <span class="mf">9.830e-01</span><span class="p">,</span>  <span class="mf">1.943e-16</span><span class="p">,</span> <span class="o">-</span><span class="mf">9.830e-01</span><span class="p">])</span>
+</span></code></pre></div>
+<p>This is slightly more involved in comparison with other finite element libraries. A simple workaround is to write a small function that automates this set of calculations.</p>
+<div class="admonition info">
+<p class="admonition-title">Remark</p>
+<p>Using <code>skfem.Basis.probes</code> is non-trivial for vector-valued fields. We will discuss this in detail in a later tutorial.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.select"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.081f42fc.min.js"></script>
+      
+        <script src="../js/print-site.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      
+        <script src="../mathjaxhelper.js"></script>
+      
+    
+  </body>
+</html>

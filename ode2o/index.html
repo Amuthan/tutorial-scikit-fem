@@ -1,0 +1,854 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A hands-on tutorial for implementing the finite element method using the scikit-fem library.">
+      
+      
+        <meta name="author" content="Amuthan A. Ramabathiran">
+      
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../fefields/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.24">
+    
+    
+      
+        <title>A simple 1D example - scikit-fem tutorial</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.6543a935.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../css/print-site.css">
+    
+      <link rel="stylesheet" href="../css/print-site-material.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#linear-second-order-ordinar-differential-equation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scikit-fem tutorial" class="md-header__button md-logo" aria-label="scikit-fem tutorial" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scikit-fem tutorial
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              A simple 1D example
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scikit-fem tutorial" class="md-nav__button md-logo" aria-label="scikit-fem tutorial" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    scikit-fem tutorial
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    A simple 1D example
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    A simple 1D example
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-weak-formulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Weak formulation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-discretize-the-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Discretize the domain
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-choose-element-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Choose element type
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-set-up-finite-element-space" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Set up finite element space
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-assemble-stiffness-matrix-and-load-vector" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Assemble stiffness matrix and load vector
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-apply-boundary-conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Apply boundary conditions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-solve-discretized-equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Solve discretized equations
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-postprocessing" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Postprocessing
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-full-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      The full code
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fefields/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Projection, interpolation, and probes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../heat2d/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    2D heat transfer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../planestress/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Plane stress problem
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-weak-formulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Weak formulation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-discretize-the-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Discretize the domain
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-choose-element-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Choose element type
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-set-up-finite-element-space" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Set up finite element space
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-assemble-stiffness-matrix-and-load-vector" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Assemble stiffness matrix and load vector
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-apply-boundary-conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Apply boundary conditions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-solve-discretized-equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Solve discretized equations
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-postprocessing" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Postprocessing
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-full-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      The full code
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="linear-second-order-ordinar-differential-equation">Linear second order ordinar differential equation</h1>
+<p>To start with, let us see how we can use <code>scikit-fem</code> to solve a simple second order ordinary differential equation. Consider the problem of finding a function <span class="arithmatex">\(u:[0,1] \to \mathbb{R}\)</span> such that <span class="arithmatex">\(u(0) = u(1) = 0\)</span>, and 
+<script type="math/tex; mode=display">
+-u''(x) = 4\pi^2 \sin (2\pi x),
+</script>
+for <span class="arithmatex">\(x \in (0,1)\)</span>. Note that this problem can be solved exactly: the solution is <span class="arithmatex">\(u^\star(x) = \sin (2\pi x)\)</span>.</p>
+<p>To solve this problem using FEM, we need to peform the following steps---these steps are standard and mostly similar to that in the <a href="https://scikit-fem.readthedocs.io/en/latest/gettingstarted.html">scikit-fem documentation</a>:</p>
+<ol>
+<li>Formulate the differential equation in weak form.</li>
+<li>Discretize the domain.</li>
+<li>Choose element type.</li>
+<li>Set up finite element space.</li>
+<li>Assemble stiffness matrix and load vector.</li>
+<li>Apply boundary conditions.</li>
+<li>Solve the discretized equations.</li>
+<li>Post-process solution to extract relevant information. </li>
+</ol>
+<p>Let us look at each of these steps in turn.</p>
+<h2 id="1-weak-formulation">1. Weak formulation</h2>
+<p>Put simply, a weak form of a Differential Equation (DE) requires that this DE is true <em>on average</em>. More precisely, we require that <em>every</em> weighted average of the DE is true. </p>
+<p>In mathematical terms, we choose a <em>test function</em> <span class="arithmatex">\(v:[0,1] \to \mathbb{R}\)</span> such that <span class="arithmatex">\(v(0) = v(1) = 0\)</span>, multiply the DE by <span class="arithmatex">\(v\)</span>, and integrate over the whole domain:
+<script type="math/tex; mode=display">
+\int_0^1 -u''(x)v(x)\,dx = \int_0^1 4\pi^2 \sin (2\pi x) v(x)\,dx.
+</script>
+We can now integrate the term on teh left hand side by parts to get
+<script type="math/tex; mode=display">
+-[u'(x)v(x)]_0^1 + \int_0^1 u'(x)v'(x)\,dx = \int_0^1 4\pi^2 \sin (2\pi x) v(x)\,dx. 
+</script>
+Using the boundary conditions <span class="arithmatex">\(v(0) = v(1) = 0\)</span> for the test function, we get the <em>weak form</em> of the DE as
+<script type="math/tex; mode=display">
+\int_0^1 u'(x)v'(x)\,dx = \int_0^1 4\pi^2 \sin (2\pi x) v(x)\,dx. 
+</script>
+We now insist that this is true for <em>every</em> choice of test function <span class="arithmatex">\(v\)</span> that vanishes at the endpoints of the interval <span class="arithmatex">\((0,1)\)</span>.</p>
+<p>For future use, we can write the foregoing weak form as
+<script type="math/tex; mode=display">
+a(u,v) = l(v),
+</script>
+where <span class="arithmatex">\(a(\cdot,\cdot)\)</span> is a <em>bilinear function</em> and <span class="arithmatex">\(l(\cdot)\)</span> is a linear functional. </p>
+<p>In <code>scikit-fem</code>, we can directly transcribe the weak form into appropriately <em>decorated</em> python functions. We first need to import <code>scikit-fem</code>:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span> <span class="nn">skfem</span>
+</span></code></pre></div>
+<p>Let us now focus on the right hand side of the weak form, which is the linear functional 
+<script type="math/tex; mode=display">
+l(v) = \int_0^1 4\pi^2 \sin (2\pi x) v(x)\,dx. 
+</script>
+To use this in <code>scikit-fem</code>, we extract the integrand, which is the functional <span class="arithmatex">\(v \mapsto f v\)</span>, where <span class="arithmatex">\(f\)</span> is the function <span class="arithmatex">\(f(x) = 4\pi^2 \sin (2\pi x)\)</span>. We then implement this as a Python function decorated with the <code>@skfem.LinearForm</code> decorator, as shown below.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nd">@skfem</span><span class="o">.</span><span class="n">LinearForm</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="k">def</span> <span class="nf">l</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">x</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">f</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="k">return</span> <span class="n">f</span> <span class="o">*</span> <span class="n">v</span> 
+</span></code></pre></div>
+<p>Let us unpack this. The <code>@skfem.LinearForm</code> decorator informs <code>scikit-fem</code> that the function that follows is to be interpreted as the integrand of a linear functional. Procedurally, <code>scikit-fem</code> expects such a function to have exactly two arguments, the first is the test function, which is the variable <code>v</code> here, and the second is a <em>context variable</em>, which is the variable <code>ctx</code> here. Think of the context variable as containing <em>any other information</em> that we need, other than the test function itself, to specify the linear form. In the present case, note that there is an explicit <span class="arithmatex">\(x\)</span>-dependence in the definition of the linear functional <span class="arithmatex">\(l\)</span>. The context variable <code>ctx</code> is a <em>catch-all</em> variable that contains all this information. This is a very elegant design feature in <code>scikit-fem</code> which is very useful in practice---we will learn more about this as we progress through the tutorials. For now, think of the context variable <code>ctx</code> as a dictionary that stores relevant information in the standard <code>key: value</code> format. </p>
+<div class="admonition info">
+<p class="admonition-title">Remark</p>
+<p>The <code>scikit-fem</code> documentation uses symbols like <code>w</code> for the second argument to a <code>@skfem.LinearForm</code>-decorated function. We will consistently use the variable name <code>ctx</code> to explicitly identify it as a context variable. </p>
+</div>
+<p>To specify the linear functional <span class="arithmatex">\(l(v)\)</span>, we need to first extract the <span class="arithmatex">\(x\)</span>-coordinate of any point in the domain. By default, the <code>ctx</code> variable has a key called <code>'x'</code> that stores coordinate information. The coordinates of a point in the domain are thus contained in <code>ctx['x']</code>. For a 1D problem as in this case, the <span class="arithmatex">\(x\)</span>-coordinate is obtained as <code>ctx['x'][0]</code>.</p>
+<div class="admonition info">
+<p class="admonition-title">Remark</p>
+<p>Technically speaking, <code>ctx['x']</code> stores the coordinates of the quadrature points in each element in the domain as a <code>numpy.ndarray</code> object. We will learn more about this later. </p>
+</div>
+<div class="admonition info">
+<p class="admonition-title">Remark</p>
+<p>If you are wondering why there is a <code>[0]</code> at the end of <code>ctx['x'][0]</code>, we will use a similar notation to extract other coordinates in higher dimensions. Thus, in a 2D setting, <code>ctx['x'][0]</code> will return <span class="arithmatex">\(x\)</span>-coordinates of the global quadrature points, while <code>ctx['0'][1]</code> will return all the corresponding <span class="arithmatex">\(y\)</span>-coordinates. </p>
+</div>
+<p>In the present case, we first extract the coordinate information in the variable <code>x</code> using <code>x = ctx['x']</code>, and subsequently define the function <code>f(x) = 4\pi^2 \sin(2\pi x)</code> as <code>f = 4 * np.pi**2 * np.sin( 2 * np.pi * x[0] )</code>. A really nice feature of <code>scikit-fem</code> is that everything is implemented using <code>numpy</code> internally and in a vectorized format, so you can freely use <code>numpy</code> constants and functions inside <code>@sfem.&lt;...&gt;</code>-decorated functions.</p>
+<p>Once we have defined the function <code>f</code> as above, we can fully specify the integrand in the right hand side as <code>f * v</code>. As simple as that!</p>
+<div class="admonition info">
+<p class="admonition-title">Remark</p>
+<p>If you are wondering why we are storing only the integrand, and not the whole integral, we will use the this decorated function later during the assembly process to compute the value of the integral. </p>
+</div>
+<p>Let us now now look at the left hand side of the weak form, which is the bilinear function <span class="arithmatex">\(a(\cdot, \cdot)\)</span> defined as
+<script type="math/tex; mode=display">
+a(u,v) = \int_0^1 u'(x) v'(x)\,dx.    
+</script>
+To use this in <code>scikit-fem</code>, we extract the integrand, which is the function <span class="arithmatex">\((u,v) \mapsto u' v'\)</span>, and implement it as a Python function decorated with the <code>@skfem.BilinearForm</code>, as shown below.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span> <span class="nn">skfem.helpers</span> <span class="kn">import</span> <span class="n">dot</span><span class="p">,</span> <span class="n">grad</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="nd">@skfem</span><span class="o">.</span><span class="n">BilinearForm</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">def</span> <span class="nf">a</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="k">return</span> <span class="n">dot</span><span class="p">(</span> <span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">grad</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="p">)</span>
+</span></code></pre></div>
+<p>There is a fair bit to unpack here. To start with, the <code>@skfem.BilinearForm</code> decorator informs <code>scikit-fem</code> that the function that follows is to be interpreted as the integrand of a bilinear form. Accordingly, the first argument, <code>u</code> here, is interpreted as the trial function, the second argument, <code>v</code> here, is interpreted as the test function, and the third argument, <code>ctx</code> here, is interpreted as a context variable.</p>
+<p>We now have a new problem. The integrand contains the derivatives of the trial and test functions. How do we compute these? <code>scikit-fem</code> stores trial functions and test functions internally as an obect of type <code>DiscreteField</code>. A simple mental model you can have of an object of this type is a vector of values of this object stored at the global quadrature locations, along with additional functionality that uses finite element interpolate to compute derivatives. We will learn more about this in detail later. For now, it is sufficient to note that <code>skfem.helpers</code> has very convenient functions called <code>grad</code> (and a lot more!) that computes the gradient at the global quadrature points. The <code>dot</code> function is a little more subtle: it computes the inner product at the quadrature points, resulting in a scalar quantity at the global quadrature points. We will analyze this deeper in a later section. </p>
+<p>Note that the context variable <code>ctx</code> is unused in the present case since the bilinear form is entirely specified by the trial and test functions only.</p>
+<h2 id="2-discretize-the-domain">2. Discretize the domain</h2>
+<p>To compute the integrals in the definition of the bilinear form <span class="arithmatex">\(a\)</span> and the linear form <span class="arithmatex">\(l\)</span>, the strategy adopted in FEM is to subdivide the domain into smaller <em>elements</em> and  use an appropriate quadrature rule to numerically integrate integrals over each element to approximate the global integrals. Fundamental to all these operations is a <em>mesh</em> of the domain. In the present case, the domain is the interval <span class="arithmatex">\([0,1]\)</span>, and a mesh in this case is just a collection of non-overlapping intervals whose union is the whole interval. <code>scikit-fem</code> provides a convenient <code>MeshLine</code> function that takes a collection of ordered points in the interval (inclusive of endpoints) and creates a finite element mesh whose nodes are given by these points. For instance, a uniform mesh with 10 elements is created as follows:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">mesh</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">MeshLine</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span> <span class="p">)</span>
+</span></code></pre></div>
+<p>The nodes of the mesh can be accessed using <code>mesh.p</code>, and the connectivity of the mesh can be accessed using <code>mesh.t</code>, both returning <code>numpy.ndarray</code> objects. Here are some typical outputs:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">mesh</span><span class="o">.</span><span class="n">p</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">array</span><span class="p">([[</span><span class="mf">0.</span> <span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">1.</span> <span class="p">]])</span>
+</span></code></pre></div>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">mesh</span><span class="o">.</span><span class="n">t</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">array</span><span class="p">([[</span> <span class="mi">0</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">2</span><span class="p">,</span>  <span class="mi">3</span><span class="p">,</span>  <span class="mi">4</span><span class="p">,</span>  <span class="mi">5</span><span class="p">,</span>  <span class="mi">6</span><span class="p">,</span>  <span class="mi">7</span><span class="p">,</span>  <span class="mi">8</span><span class="p">,</span>  <span class="mi">9</span><span class="p">],</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>       <span class="p">[</span> <span class="mi">1</span><span class="p">,</span>  <span class="mi">2</span><span class="p">,</span>  <span class="mi">3</span><span class="p">,</span>  <span class="mi">4</span><span class="p">,</span>  <span class="mi">5</span><span class="p">,</span>  <span class="mi">6</span><span class="p">,</span>  <span class="mi">7</span><span class="p">,</span>  <span class="mi">8</span><span class="p">,</span>  <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int32</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Note that <code>scikit-fem</code> uses a different convention than many other finite element software in how these arrays are shaped. The <code>mesh.p</code> array is of size <code>dim x n_nodes</code> where <code>dim</code> denotes the spatial dimension, which in this case is 1, and <code>n_nodes</code> denotes the number of nodes in the mesh, which in this case is 11. The connectivity matrix <code>mesh.t</code> is of size <code>nne x n_elts</code>, where <code>nne</code> is the number of nodes per element, which in the present case is 2, and <code>n_elts</code> denotes the number of elements in the mesh, which in the present case is 10. </p>
+<p>The <code>skfem.visuals.matplotlib</code> module contains a <code>draw</code> method that can be used to visualize the mesh. This is a thin wrapper over <code>matplotlib</code>, which makes it very convenient to manipulate plots using standard Python commands. </p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">import</span> <span class="nn">skfem.visuals.matplotlib</span> <span class="k">as</span> <span class="nn">skplot</span> 
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">skplot</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">skplot</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span></code></pre></div>
+<p>This should return a plot as shown below:
+<img alt="A 1D mesh with 10 elements" src="../figures/mesh_1d.png" /></p>
+<p><code>scikit-fem</code> constructs a lot of useful information based on the mesh data. For instance, the nodes on the boundary can be obtained using <code>mesh.boundary_nodes()</code>.</p>
+<h2 id="3-choose-element-type">3. Choose element type</h2>
+<p>Once we have discretized the domain, we next have to choose how we wish to interpolate a given function over any element in the mesh. This is often referred to as the choice of the <em>element type</em> and plays a key role in the finite element method. In the present case, let us choose the approximate solution to be linear over each element, and in a manner that makes it globally continuous. A function of this type is said to be <em>continuous and piecewise linear</em>, more commonly referred to as <span class="arithmatex">\(P_1\)</span> in the finite element literature. <code>scikit-fem</code> comes with an exhaustive list of elements, and a reasonably simple procedure to create new element types when necessary. <span class="arithmatex">\(P_1\)</span> elements in one dimension are created as follows:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">elt</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">ElementLineP1</span><span class="p">()</span>
+</span></code></pre></div>
+<p><code>scikit-fem</code> computes a variety of attributes for each element type. We will have a detailed look at this later, but for the moment, let us record two important and useful features. Associated with each element are <em>degrees of freedom</em>, which may or may not be at the location of the nodes of the element. To list the names of the degrees of freedom, use <code>elt.dofnames</code>. In the present case this returns</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">elt</span><span class="o">.</span><span class="n">dofnames</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">]</span>
+</span></code></pre></div>
+<p>By default, <code>scikit-fem</code> uses names like <code>u</code> to denote the degrees of freedom. This output indicates that the degrees of freedom correspond to a single scalar variable called <code>u</code>. The location of these degrees of freedom can be obtained using <code>elt.doflocs</code>:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">elt</span><span class="o">.</span><span class="n">doflocs</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">array</span><span class="p">([[</span><span class="mf">0.</span><span class="p">],</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>       <span class="p">[</span><span class="mf">1.</span><span class="p">]])</span>
+</span></code></pre></div>
+<p>This tells you two things: first, there are two degrees of freedom per element, and second, that these degrees of freedom are located at locations <span class="arithmatex">\(0\)</span> and <span class="arithmatex">\(1\)</span>. These refer to the location of the degrees of freedom on a reference line element, which can be accessed using <code>elt.refdom</code>.</p>
+<h2 id="4-set-up-finite-element-space">4. Set up finite element space</h2>
+<p>Recall that the weak form amounts to finding a function <span class="arithmatex">\(u\)</span> such that the equation <span class="arithmatex">\(a(u,v) = l(v)\)</span> is satisfied for <em>all</em> admissible test functions <span class="arithmatex">\(v\)</span>---let us call this collection <span class="arithmatex">\(V\)</span>. The essence of the finite element method is to now require that this is true only for a finite dimensional linear subspace of test functions <span class="arithmatex">\(V_h \subset V\)</span>. Mathematically, we say that the finite element solution <span class="arithmatex">\(u_h\)</span> solves
+<script type="math/tex; mode=display">
+a(u_h, v) = l(v),
+</script>
+for every <span class="arithmatex">\(v \in V_h\)</span>. In <code>scikit-fem</code> finite element spaces like <span class="arithmatex">\(V_h\)</span> are defined using the <code>Basis</code> class. An <code>skfem.Basis</code> object is initialized by passing to it a mesh and an element type. In the present case, we can initialize a finite element space as follows:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">Vh</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">Basis</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">elt</span><span class="p">)</span>
+</span></code></pre></div>
+<p>The finite element space contains everything we need for constructing approximate solutions. Each finite element space has associated with a certain number of degrees of freedom, which we can access using <code>Vh.N</code>. The location of these degrees of freedom can be obtained using <code>Vh.doflocs</code>. Note carefully that the location of the degrees of freedom need not necessarily be the same as the location of nodes in the mesh---for instance, <span class="arithmatex">\(P_2\)</span> elements will also have degrees of freedom at the center of each element. There are several other useful attributes and methods associated with <code>skfem.Basis</code> objects as we will learn shortly. </p>
+<h2 id="5-assemble-stiffness-matrix-and-load-vector">5. Assemble stiffness matrix and load vector</h2>
+<p>Having defined the weak form and the appropriate finite element space(s), we can now <em>assemble</em> the stiffness matrix and load vector. <code>scikit-fem</code> provides a very convenient <code>skfem.asm</code> method that takes a bilinear/linear form and appropriate finite element spaces to assemble the global stiffness matrix/load vector. In the present case, the stiffness matrix of size <code>Vh.N x Vh.N</code> is obtained using</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">K</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">asm</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">Vh</span><span class="p">)</span>
+</span></code></pre></div>
+<p>The load vector of length <code>Vh.N</code> is obtained using</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">F</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">asm</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">Vh</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Note that the <code>K</code> and <code>F</code> variables are regular <code>numpy.ndarray</code> arrays. <code>skfem.asm</code> can also take additional arguments to pass context variables. In the present case, only the bilinear form requires the additional context variable <code>x</code>, but this is passed implicitly by <code>scikit-fem</code>. </p>
+<div class="admonition info">
+<p class="admonition-title">Remark</p>
+<p><code>scikit-fem</code> provides alternative syntax like <code>K = a.assemble(Vh)</code> and <code>F = l.assemble(Vh)</code> that for assembly. We will consistenly use the <code>skfem.asm</code> method for uniformity.</p>
+</div>
+<p>Internally, <code>scikit-fem</code> employs quadrature rules to approximate the element stiffnes matrix and element load vector, and the mesh connectivity information and element type to perform the global assembly. You can access the quadrature rule automatically selected by <code>scikit-fem</code> using <code>Vh.quadrature</code>. You can also set the quadrature rule explicitly---more on this later. </p>
+<h2 id="6-apply-boundary-conditions">6. Apply boundary conditions</h2>
+<p>Boundary conditions restrict the values that some degrees of freedom can take on the boundaries. Note that the finite element method requires only the imposition of the Dirichlet boundary condition; Neumann boundary conditions are automatically satisfied by the weak formulation. To obtain degrees of freedom associated with a given finite element discretization, <code>scikit-fem</code> provides a very convenient <code>get_dofs()</code> method that is associated with an object of type <code>skfem.Basis</code>. When called without any arguments, it return all the boundary degrees of freedom, which is what we need here. The <code>get_dofs()</code> method, however, is much more powerful and is useful in a wide variety of situations, as we will learn later. For now, let us collect the degrees of freedom associated with the boundaries of the mesh.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">dirichlet_dofs</span> <span class="o">=</span> <span class="n">Vh</span><span class="o">.</span><span class="n">get_dofs</span><span class="p">()</span>
+</span></code></pre></div>
+<p>You can list the degrees of freedom by using <code>dirichlet_dofs.all()</code>. </p>
+<p>Once you collect the appropriate list of degrees of freedom that need to be constrained, <code>scikit-fem</code> provides a bunch of options to enforce these conditions on the stiffness matrix and load vector. The one we will adopt here is the <code>skfem.condense</code> method that takes the full stiffness matrix and load vector along with the list of Dirichlet degrees of freedom as input, and returns a list consisting of the reduced stiffnes matrix, load vector, and internal degrees of freedom. The details of this will be presented later; for now, let us collect the output of <code>skfem.condense</code> into a tuple called <code>solver_data</code>:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">solver_data</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">condense</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">D</span><span class="o">=</span><span class="n">dirichlet_dofs</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Notice how the Dirichlet degrees of freedom are passed in using the <code>D=dirichlet_dofs</code> option. By default, <code>scikit-fem</code> assigns a zero value to the corresponding degrees of freedom. It is possible to specify non-zero values too, as will be illustrated in a later example. </p>
+<p>In case you wish to extract the condensed stiffness matrix and load vector, these can be obtained as <code>solver_data[0]</code> and <code>solver_data[1]</code>, respectively.</p>
+<h2 id="7-solve-discretized-equations">7. Solve discretized equations</h2>
+<p>To solve the resulting discrete equations, <code>scikit-fem</code> uses the sparse linear solvers provided by <code>scipy</code>, by default. It is possible, however to use any other linear algebra library in its place. For now, let us stick with the default options. Solving the linear system of equation is easily accomplished by </p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">uh</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="o">*</span><span class="n">solver_data</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Recall that <code>solver_data</code> is a tuple; the <code>*</code> prefix is a simple mechanism in Python to extract elements of this tuple and pass those as arguments to the function <code>skfem.solve</code>. The <code>skfem.solve</code> method is a simple wrapper over the sparse linear solvers provided by <code>scipy</code>. By default, <code>scikit-fem</code> chooses the sparse direct solver, but iterative solvers supported by <code>scipy</code> can also be chosen. The output <code>uh</code> is a <code>numpy.ndarray</code> array. That's it!</p>
+<p>We can visualize the computed solution using the <code>plot</code> functionality provided by <code>scikit-fem</code>:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">skplot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">Vh</span><span class="p">,</span> <span class="n">uh</span><span class="p">)</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="n">skplot</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span></code></pre></div>
+<p>This should produce a plot as shown below:
+<img alt="Solution of second order ODE" src="../figures/ode2o_solution.png" /></p>
+<h2 id="8-postprocessing">8. Postprocessing</h2>
+<p>In practice, we are interested in one or more quantities that depend on the computed finite element solution. <code>scikit-fem</code> provides several tools to extract the relevant information. To get started, let us compute the error associated with the computed finite element solution.</p>
+<p>In the present case, we know the exact solution: <span class="arithmatex">\(u^\star(x) = \sin (2 \pi x)\)</span>. One way to measure the error between the approximate and true solutions is by computing the <span class="arithmatex">\(L_2\)</span> norm of their difference: 
+<script type="math/tex; mode=display">
+\epsilon^2 = \int_0^1 (u_h - u^\star)^2 \, dx. 
+</script>
+Notice how the mesh and the quadrature rules employed for finite element assembly provide a <em>natural</em> means to compute integrals like the one shown above. Unlike the case of bilinear and linear forms, the integral shown above has neither a trial function nor a test function. <code>scikit-fem</code> allows us to implement such functionals using the <code>@skfem.Functional</code> decorator. The squared <span class="arithmatex">\(L_2\)</span> error is implemented as follows:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">def</span> <span class="nf">u_exact</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="nd">@skfem</span><span class="o">.</span><span class="n">Functional</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="k">def</span> <span class="nf">sq_error_L2</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>    <span class="n">x</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>    <span class="n">u</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">]</span>
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>    <span class="k">return</span> <span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">u_exact</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span><span class="o">**</span><span class="mi">2</span>
+</span></code></pre></div>
+<p>Notice how functions decorated with the <code>@skfem.Functional</code> decorator take only a context variable as an argument. To compute the <span class="arithmatex">\(L_2\)</span> error of the finite element solution, we need to pass the finite element solution <code>uh</code> via the context variable <code>ctx</code> to the <code>sq_error_L2</code> function. Recall that <code>uh</code> is a <code>numpy.ndarray</code> array that has the same size as the number of degrees of freedom <code>Vh.N</code>. To pass it via a context variable, we need to first convert this to an object of the <code>DiscreteField</code> class. As we will learn soon, a <code>DiscreteField</code> object lives at the quadrature points of the finite element discretization, not at the degrees of freedom. <code>scikit-fem</code> provides a convenient means to compute a <code>DiscreteField</code> object from an array of degrees of freedom like <code>uh</code> using the <code>Basis.interpolate</code> function:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">uh_g</span> <span class="o">=</span> <span class="n">Vh</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">uh</span><span class="p">)</span>
+</span></code></pre></div>
+<p>This <code>interpolate</code>-ed object is what we need to pass via the context variable. We will explore the internal such objects later. For now, let us see how we can compute the <span class="arithmatex">\(L_2\)</span> error of the finite element solution:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">L2_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>    <span class="n">skfem</span><span class="o">.</span><span class="n">asm</span><span class="p">(</span><span class="n">sq_error_L2</span><span class="p">,</span> <span class="n">Vh</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="n">uh_g</span><span class="p">)</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>Notice how the function interpolated solution object <code>uh_g</code> is passed as a named variable in the <code>skfem.asm</code> function. Any name can be used to hold context vaiables; the same name should be used inside the <code>@skfem.Functional</code> decorated function to access this context variable.</p>
+<p>For the specific ODE considered here, you should get an <span class="arithmatex">\(L_2\)</span> error of <span class="arithmatex">\(2.298\times{10}^{-2}\)</span>.</p>
+<h2 id="the-full-code">The full code</h2>
+<p>For convenient reference, the full code is provided below:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="kn">import</span> <span class="nn">skfem</span> 
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="kn">from</span> <span class="nn">skfem.helpers</span> <span class="kn">import</span> <span class="n">dot</span><span class="p">,</span> <span class="n">grad</span>
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="kn">import</span> <span class="nn">skfem.visuals.matplotlib</span> <span class="k">as</span> <span class="nn">skplot</span> 
+</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>
+</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>
+</span><span id="__span-20-7"><a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="nd">@skfem</span><span class="o">.</span><span class="n">LinearForm</span>
+</span><span id="__span-20-8"><a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a><span class="k">def</span> <span class="nf">l</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+</span><span id="__span-20-9"><a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a>    <span class="n">x</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+</span><span id="__span-20-10"><a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a>    <span class="n">f</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</span><span id="__span-20-11"><a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a>    <span class="k">return</span> <span class="n">f</span> <span class="o">*</span> <span class="n">v</span> 
+</span><span id="__span-20-12"><a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a>
+</span><span id="__span-20-13"><a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a><span class="nd">@skfem</span><span class="o">.</span><span class="n">BilinearForm</span>
+</span><span id="__span-20-14"><a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a><span class="k">def</span> <span class="nf">a</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+</span><span id="__span-20-15"><a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a>    <span class="k">return</span> <span class="n">dot</span><span class="p">(</span> <span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">grad</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="p">)</span>
+</span><span id="__span-20-16"><a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a>
+</span><span id="__span-20-17"><a id="__codelineno-20-17" name="__codelineno-20-17" href="#__codelineno-20-17"></a>
+</span><span id="__span-20-18"><a id="__codelineno-20-18" name="__codelineno-20-18" href="#__codelineno-20-18"></a><span class="k">def</span> <span class="nf">u_exact</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+</span><span id="__span-20-19"><a id="__codelineno-20-19" name="__codelineno-20-19" href="#__codelineno-20-19"></a>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span>
+</span><span id="__span-20-20"><a id="__codelineno-20-20" name="__codelineno-20-20" href="#__codelineno-20-20"></a>
+</span><span id="__span-20-21"><a id="__codelineno-20-21" name="__codelineno-20-21" href="#__codelineno-20-21"></a><span class="nd">@skfem</span><span class="o">.</span><span class="n">Functional</span>
+</span><span id="__span-20-22"><a id="__codelineno-20-22" name="__codelineno-20-22" href="#__codelineno-20-22"></a><span class="k">def</span> <span class="nf">sq_error_L2</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+</span><span id="__span-20-23"><a id="__codelineno-20-23" name="__codelineno-20-23" href="#__codelineno-20-23"></a>    <span class="n">u</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;u&#39;</span><span class="p">]</span>
+</span><span id="__span-20-24"><a id="__codelineno-20-24" name="__codelineno-20-24" href="#__codelineno-20-24"></a>    <span class="n">x</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+</span><span id="__span-20-25"><a id="__codelineno-20-25" name="__codelineno-20-25" href="#__codelineno-20-25"></a>    <span class="k">return</span> <span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">u_exact</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span><span class="o">**</span><span class="mi">2</span> 
+</span><span id="__span-20-26"><a id="__codelineno-20-26" name="__codelineno-20-26" href="#__codelineno-20-26"></a>
+</span><span id="__span-20-27"><a id="__codelineno-20-27" name="__codelineno-20-27" href="#__codelineno-20-27"></a>
+</span><span id="__span-20-28"><a id="__codelineno-20-28" name="__codelineno-20-28" href="#__codelineno-20-28"></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+</span><span id="__span-20-29"><a id="__codelineno-20-29" name="__codelineno-20-29" href="#__codelineno-20-29"></a>    <span class="n">mesh</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">MeshLine</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span> <span class="p">)</span>
+</span><span id="__span-20-30"><a id="__codelineno-20-30" name="__codelineno-20-30" href="#__codelineno-20-30"></a>    <span class="n">skplot</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+</span><span id="__span-20-31"><a id="__codelineno-20-31" name="__codelineno-20-31" href="#__codelineno-20-31"></a>    <span class="n">skplot</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span><span id="__span-20-32"><a id="__codelineno-20-32" name="__codelineno-20-32" href="#__codelineno-20-32"></a>
+</span><span id="__span-20-33"><a id="__codelineno-20-33" name="__codelineno-20-33" href="#__codelineno-20-33"></a>    <span class="n">elt</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">ElementLineP1</span><span class="p">()</span>
+</span><span id="__span-20-34"><a id="__codelineno-20-34" name="__codelineno-20-34" href="#__codelineno-20-34"></a>
+</span><span id="__span-20-35"><a id="__codelineno-20-35" name="__codelineno-20-35" href="#__codelineno-20-35"></a>    <span class="n">Vh</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">Basis</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">elt</span><span class="p">)</span>
+</span><span id="__span-20-36"><a id="__codelineno-20-36" name="__codelineno-20-36" href="#__codelineno-20-36"></a>
+</span><span id="__span-20-37"><a id="__codelineno-20-37" name="__codelineno-20-37" href="#__codelineno-20-37"></a>    <span class="n">K</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">asm</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">Vh</span><span class="p">)</span>
+</span><span id="__span-20-38"><a id="__codelineno-20-38" name="__codelineno-20-38" href="#__codelineno-20-38"></a>    <span class="n">F</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">asm</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">Vh</span><span class="p">)</span> 
+</span><span id="__span-20-39"><a id="__codelineno-20-39" name="__codelineno-20-39" href="#__codelineno-20-39"></a>
+</span><span id="__span-20-40"><a id="__codelineno-20-40" name="__codelineno-20-40" href="#__codelineno-20-40"></a>    <span class="n">dirichlet_dofs</span> <span class="o">=</span> <span class="n">Vh</span><span class="o">.</span><span class="n">get_dofs</span><span class="p">()</span>
+</span><span id="__span-20-41"><a id="__codelineno-20-41" name="__codelineno-20-41" href="#__codelineno-20-41"></a>
+</span><span id="__span-20-42"><a id="__codelineno-20-42" name="__codelineno-20-42" href="#__codelineno-20-42"></a>    <span class="n">solver_data</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">condense</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">D</span><span class="o">=</span><span class="n">dirichlet_dofs</span><span class="p">)</span>
+</span><span id="__span-20-43"><a id="__codelineno-20-43" name="__codelineno-20-43" href="#__codelineno-20-43"></a>    <span class="n">uh</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="o">*</span><span class="n">solver_data</span><span class="p">)</span>
+</span><span id="__span-20-44"><a id="__codelineno-20-44" name="__codelineno-20-44" href="#__codelineno-20-44"></a>
+</span><span id="__span-20-45"><a id="__codelineno-20-45" name="__codelineno-20-45" href="#__codelineno-20-45"></a>    <span class="n">skplot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">Vh</span><span class="p">,</span> <span class="n">uh</span><span class="p">)</span>
+</span><span id="__span-20-46"><a id="__codelineno-20-46" name="__codelineno-20-46" href="#__codelineno-20-46"></a>    <span class="n">skplot</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span><span id="__span-20-47"><a id="__codelineno-20-47" name="__codelineno-20-47" href="#__codelineno-20-47"></a>
+</span><span id="__span-20-48"><a id="__codelineno-20-48" name="__codelineno-20-48" href="#__codelineno-20-48"></a>    <span class="n">uh_g</span> <span class="o">=</span> <span class="n">Vh</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">uh</span><span class="p">)</span>
+</span><span id="__span-20-49"><a id="__codelineno-20-49" name="__codelineno-20-49" href="#__codelineno-20-49"></a>    <span class="n">L2_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+</span><span id="__span-20-50"><a id="__codelineno-20-50" name="__codelineno-20-50" href="#__codelineno-20-50"></a>        <span class="n">skfem</span><span class="o">.</span><span class="n">asm</span><span class="p">(</span><span class="n">sq_error_L2</span><span class="p">,</span> <span class="n">Vh</span><span class="p">,</span> <span class="n">u</span><span class="o">=</span><span class="n">uh_g</span><span class="p">)</span>
+</span><span id="__span-20-51"><a id="__codelineno-20-51" name="__codelineno-20-51" href="#__codelineno-20-51"></a>    <span class="p">)</span>
+</span><span id="__span-20-52"><a id="__codelineno-20-52" name="__codelineno-20-52" href="#__codelineno-20-52"></a>
+</span><span id="__span-20-53"><a id="__codelineno-20-53" name="__codelineno-20-53" href="#__codelineno-20-53"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;FE L2 error = </span><span class="si">{</span><span class="n">L2_error</span><span class="si">:</span><span class="s1">.3e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span></code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.select"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.081f42fc.min.js"></script>
+      
+        <script src="../js/print-site.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      
+        <script src="../mathjaxhelper.js"></script>
+      
+    
+  </body>
+</html>

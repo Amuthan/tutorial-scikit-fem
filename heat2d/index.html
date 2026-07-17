@@ -1,0 +1,990 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A hands-on tutorial for implementing the finite element method using the scikit-fem library.">
+      
+      
+        <meta name="author" content="Amuthan A. Ramabathiran">
+      
+      
+      
+        <link rel="prev" href="../fefields/">
+      
+      
+        <link rel="next" href="../planestress/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.24">
+    
+    
+      
+        <title>2D heat transfer - scikit-fem tutorial</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.6543a935.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../css/print-site.css">
+    
+      <link rel="stylesheet" href="../css/print-site-material.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#a-heat-transfer-problem-in-two-dimensions" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="scikit-fem tutorial" class="md-header__button md-logo" aria-label="scikit-fem tutorial" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            scikit-fem tutorial
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              2D heat transfer
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="scikit-fem tutorial" class="md-nav__button md-logo" aria-label="scikit-fem tutorial" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    scikit-fem tutorial
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ode2o/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    A simple 1D example
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fefields/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Projection, interpolation, and probes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    2D heat transfer
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    2D heat transfer
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-weak-formulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Weak formulation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-discretize-the-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Discretize the domain
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-choose-element" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Choose element
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-set-up-finite-element-space" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Set up finite element space
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-assemble-stiffness-matrix-and-load-vector" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Assemble stiffness matrix and load vector
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-apply-boundary-conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Apply boundary conditions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-solve-discrete-equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Solve discrete equations
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-post-processing" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Post-processing
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../planestress/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Plane stress problem
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-weak-formulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Weak formulation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-discretize-the-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Discretize the domain
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-choose-element" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Choose element
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-set-up-finite-element-space" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Set up finite element space
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-assemble-stiffness-matrix-and-load-vector" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Assemble stiffness matrix and load vector
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-apply-boundary-conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Apply boundary conditions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-solve-discrete-equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Solve discrete equations
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-post-processing" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Post-processing
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="a-heat-transfer-problem-in-two-dimensions">A heat transfer problem in two dimensions</h1>
+<p>The discussion thus far has been restricted to the 1D setting to keep the basic ideas accessible. Extending the same ideas to the 2D and 3D setting is relatively straightforward, as we will learn now. All the examples from this point onwards will be in 2D or 3D. Let us look at a two dimensional heat transfer problem to illustrate some additional features of <code>scikit-fem</code>. Consider a square domain <span class="arithmatex">\(\Omega\)</span> of size <span class="arithmatex">\(L \times L\)</span> as shown below.</p>
+<p><img alt="Domain for heat transfer problem" src="../figures/heat2d_domain.pdf" /> </p>
+<p>The temperature distribution <span class="arithmatex">\(T:\Omega \to \mathbb{R}\)</span> over the domain <span class="arithmatex">\(\Omega\)</span> satisfies the following Partial Differential Equation (PDE):
+<script type="math/tex; mode=display">
+\begin{split}
+-\kappa \nabla^2 T &= q, \quad \text{in }\Omega,\\
+T &= T_0 \quad\text{on }\Gamma_T,\\
+-\kappa \nabla T \cdot \mathbf{n} &= 0, \quad\text{on }\Gamma_W,\\
+-\kappa \nabla T \cdot \mathbf{n} &= H|\Gamma_C|(T - T_1), \quad\text{on }\Gamma_C.
+\end{split}
+</script>
+Here <span class="arithmatex">\(q\)</span> is a heat source density defined as 
+<script type="math/tex; mode=display">
+q(\mathbf{x}) = \begin{cases}
+Q, & \mathbf{x} \in \omega,\\
+0, & \mathbf{x} \in \Omega \setminus \omega.
+\end{cases}
+</script>
+In the equation shown above, <span class="arithmatex">\(\omega \subset \Omega\)</span> is a circular region of radius <span class="arithmatex">\(R\)</span> whose center is offset by a distance <span class="arithmatex">\(d\)</span> along both the horizontal and vertical directions from the bottom left corner, as shown in the figure. <span class="arithmatex">\(Q\)</span> is a constant representing the magnitude of the heat source. The quantities <span class="arithmatex">\(\kappa, T_0, T_1, H\)</span> are prescribed positive constants, and <span class="arithmatex">\(\mathbf{n}\)</span> denotes the outward normal at any point on the boundary. </p>
+<p>Three distinct types of boundary are shown: <span class="arithmatex">\(\Gamma_W\)</span> representing an adiabatic wall that does not allow any heat flux to enter or leave, <span class="arithmatex">\(\Gamma_T\)</span> representing a part of the boundary where the temperature is prescribed, and <span class="arithmatex">\(\Gamma_C\)</span> where heat transfer by convection is allowed. <span class="arithmatex">\(|\Gamma_C|\)</span> denotes the length of the boundary region <span class="arithmatex">\(\Gamma_C\)</span>. </p>
+<p>Our goal is to compute the temperature distribution over the domain <span class="arithmatex">\(\Omega\)</span>, and compute, in particular, the temperature at five points, marked with an X in the figure. The outer points are located at offsets of <span class="arithmatex">\((d,d)\)</span> from each corner, and the central point is located at the center of the domain. We will follow the same set of 8 steps as in the one-dimensional example. </p>
+<h2 id="1-weak-formulation">1. Weak formulation</h2>
+<p>To get the weak form of the given PDE, let us choose a test function <span class="arithmatex">\(\eta:\Omega \to \mathbb{R}\)</span> such that <span class="arithmatex">\(\eta(\mathbf{x}) = 0\)</span> for <span class="arithmatex">\(\mathbf{x} \in \Gamma_T\)</span>. Notice how we restrict the test function to have a zero value only on the Dirichlet boundary <span class="arithmatex">\(\Gamma_T\)</span>. Multiplying the PDE by the the test function <span class="arithmatex">\(\eta\)</span> and integrating over the domain <span class="arithmatex">\(\Omega\)</span>, we get
+<script type="math/tex; mode=display">
+-\int_\Omega \kappa \eta \nabla^2 T \, d\mathbf{x} = \int_\Omega \eta q \, d\mathbf{x}.
+</script>
+Let us now integrate by parts the integral on the left hand side. Towards this end, recall the following vector identity:
+<script type="math/tex; mode=display">
+\nabla \cdot (\kappa \eta \nabla T) = \kappa \nabla \eta \cdot \nabla T + \kappa \eta \nabla^2 T.
+</script>
+Integrating this over the domain <span class="arithmatex">\(\Omega\)</span> and rearranging, we see that
+<script type="math/tex; mode=display">
+-\int_\Omega \kappa \eta \nabla^2 T \, d\mathbf{x} = \int_\Omega \kappa \nabla \eta \cdot \nabla T \, d\mathbf{x} - \int_\Omega \nabla \cdot (\kappa \eta \nabla T)\,d\mathbf{x}.
+</script>
+Using the divergence theorem for the second integral on the right, we get 
+<script type="math/tex; mode=display">
+-\int_\Omega \kappa \eta \nabla^2 T \, d\mathbf{x} = \int_\Omega \kappa \nabla \eta \cdot \nabla T \, d\mathbf{x} - \int_{\partial\Omega}  \kappa \eta \nabla T \cdot \mathbf{n} \,ds.
+</script>
+Let us now focus on the boundary integral term:
+<script type="math/tex; mode=display">
+- \int_{\partial\Omega}  \kappa \eta \nabla T \cdot \mathbf{n} \,ds = \int_{\Gamma_W} (-\kappa \nabla T \cdot \mathbf{n}) \eta \, ds + \int_{\Gamma_T} (-\kappa \nabla T \cdot \mathbf{n}) \eta \, ds + \int_{\Gamma_C} (-\kappa \nabla T \cdot \mathbf{n}) \eta \, ds.
+</script>
+The first integral on the right handside vanishes due to the boundary condition <span class="arithmatex">\(-\kappa \nabla T \cdot \mathbf{n} = 0\)</span> on <span class="arithmatex">\(\Gamma_W\)</span>. The secone integral on the right handside vanishes due to the fact that <span class="arithmatex">\(\eta = 0\)</span> on <span class="arithmatex">\(\Gamma_T\)</span>. Using the boundary condition <span class="arithmatex">\(-\kappa \nabla T \cdot \mathbf{n} = h|\Gamma_C|(T_1 - T)\)</span> on <span class="arithmatex">\(\Gamma_C\)</span>, we see that
+<script type="math/tex; mode=display">
+\begin{split}
+- \int_{\partial\Omega}  \kappa \eta \nabla T \cdot \mathbf{n} \,ds &= \int_{\Gamma_C} (-\kappa \nabla T \cdot \mathbf{n}) \eta \, ds\\
+ &= \int_{\Gamma_C} H|\Gamma_C|(T - T_1)\eta\,ds.
+\end{split}
+</script>
+We have thus shown that 
+<script type="math/tex; mode=display">
+-\int_\Omega \kappa \eta \nabla^2 T \, d\mathbf{x} = \int_\Omega \kappa \nabla \eta \cdot \nabla T \, d\mathbf{x} + \int_{\Gamma_C} H|\Gamma_C|(T - T_1)\eta\,ds.
+</script>
+Using this in the weak form <span class="arithmatex">\(-\int_\Omega \kappa \eta \nabla^2 T \, d\mathbf{x} = \int_\Omega \eta q \, d\mathbf{x}\)</span>, we get
+<script type="math/tex; mode=display">
+\int_\Omega \kappa \nabla \eta \cdot \nabla T \, d\mathbf{x} + \int_{\Gamma_C} H|\Gamma_C|(T - T_1)\eta\,ds = \int_\Omega \eta q \, d\mathbf{x}.
+</script>
+Rearranging this, we get the weak form for the heat conduction problem as 
+<script type="math/tex; mode=display">
+\int_\Omega \kappa \nabla \eta \cdot \nabla T \, d\mathbf{x} + \int_{\Gamma_C} H|\Gamma_C|T\eta\,ds = \int_\Omega \eta q \, d\mathbf{x} + \int_{\Gamma_C} H|\Gamma_C|T_1\eta\,ds.
+</script>
+This can be written in the standard form:
+<script type="math/tex; mode=display">
+\begin{split}
+a(T,\eta) &= l(\eta),\\
+a(T,\eta) &= \int_\Omega \kappa \nabla \eta \cdot \nabla T \, d\mathbf{x} + \int_{\Gamma_C} H|\Gamma_C|T\eta\,ds,\\
+l(\eta) &= \int_\Omega \eta q \, d\mathbf{x} + \int_{\Gamma_C} H|\Gamma_C|T_1\eta\,ds.
+\end{split}
+</script>
+To state the weak formulation more precisely, let us introduce two function spaces:
+<script type="math/tex; mode=display">
+\begin{split}
+V &= \{T:\Omega \to \mathbb{R} \,:\, T = T_0 \text{ on } \Gamma_T\},\\
+V_0 &= \{\eta:\Omega \to \mathbb{R} \,:\, \eta = 0 \text{ on } \Gamma_T\}.
+\end{split}
+</script>
+We can then state the weak form of the PDE as follows:
+<script type="math/tex; mode=display">
+\text{find } T \in V \text{ such that } a(T,\eta) = l(\eta) \text{ for all } \eta \in V_0.
+</script>
+Notice how the Dirichlet boundary condition on <span class="arithmatex">\(\Gamma_T\)</span> is imposed on the solution <span class="arithmatex">\(T\)</span>, while the Neumann and Robin boundary conditions are built into the weak form directly. </p>
+<p>Let us look at how we can transcribe the weak form using <code>scikit-fem</code>. For the bilinear form, there are two terms, the first being an area integral, and the second being a line integral. Let us therefore define two functions for each of these integrands and decorate them using <code>@skfem.BilinearForm</code>.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">skfem.helpers</span> <span class="kn">import</span> <span class="n">dot</span><span class="p">,</span> <span class="n">grad</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nd">@skfem</span><span class="o">.</span><span class="n">BilinearForm</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">def</span> <span class="nf">a_heat_1</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">kappa</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;kappa&#39;</span><span class="p">]</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="k">return</span> <span class="n">kappa</span> <span class="o">*</span> <span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">T</span><span class="p">),</span> <span class="n">grad</span><span class="p">(</span><span class="n">eta</span><span class="p">))</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="nd">@skfem</span><span class="o">.</span><span class="n">BilinearForm</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="k">def</span> <span class="nf">a_heat_2</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">H</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">L</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">]</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="n">W</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;W&#39;</span><span class="p">]</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="n">lC</span> <span class="o">=</span> <span class="n">L</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">W</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="k">return</span> <span class="n">H</span><span class="o">*</span><span class="n">lC</span><span class="o">*</span><span class="n">T</span><span class="o">*</span><span class="n">eta</span>
+</span></code></pre></div>
+<p>Notice first how the term <code>dot(grad(T), grad(eta))</code> looks very similar to what we used in the 1D example. Functionality like <code>dot</code>, <code>grad</code> permit us to write dimension independent code: <code>a_heat_1</code> works in 1D, 2D, and 3D! </p>
+<p>Notice also how the context variable <code>ctx</code> is used to extract various relevant constants. These constants will be passed to the bilinear form during assembly as named arguments to the <code>skfem.asm</code> function. We will return to this soon.</p>
+<p>The linear form can also be implemented similarly.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">def</span> <span class="nf">q</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">Q</span><span class="p">):</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="k">return</span> <span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">d</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">d</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">R</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">Q</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nd">@skfem</span><span class="o">.</span><span class="n">LinearForm</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">def</span> <span class="nf">l_heat_1</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">d</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;d&#39;</span><span class="p">]</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">R</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;R&#39;</span><span class="p">]</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">Q</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">]</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">x</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="k">return</span> <span class="n">q</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">Q</span><span class="p">)</span> <span class="o">*</span> <span class="n">eta</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="nd">@skfem</span><span class="o">.</span><span class="n">LinearForm</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="k">def</span> <span class="nf">l_heat_2</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="n">H</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="n">L</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">]</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="n">W</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;W&#39;</span><span class="p">]</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="n">lC</span> <span class="o">=</span> <span class="n">L</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">W</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="n">T1</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;T1&#39;</span><span class="p">]</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    <span class="k">return</span> <span class="n">H</span><span class="o">*</span><span class="n">lC</span><span class="o">*</span><span class="n">T1</span><span class="o">*</span><span class="n">eta</span>
+</span></code></pre></div>
+<p>At this point, there is no indication that either <code>a_heat_2</code> or <code>l_heat_2</code> is to be integrated over the surface <span class="arithmatex">\(\Gamma_C\)</span>. This information will be specified during the assembly process. </p>
+<h2 id="2-discretize-the-domain">2. Discretize the domain</h2>
+<p>The domain in this case is a square of dimension <span class="arithmatex">\(L \times L\)</span>. Further, there are three distinct types of boundaries. We will discretize the domain using triangles. Let us set this up in stages. </p>
+<p><code>scikit-fem</code> provides a <code>skfem.MeshTri()</code> function to create a structured triangular mesh on the unit square. An example is shown below.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">mesh_unit_square</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">MeshTri</span><span class="p">()</span><span class="o">.</span><span class="n">refined</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">skplot</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">mesh_unit_square</span><span class="p">)</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">skplot</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span></code></pre></div>
+<p>The <code>.refined(3)</code> command refines an initial triangulation of the unit square consisting of just two triangles 3 times. Each refinement splits every triangle into four smaller triangles by joining the midpoints of each edge. The final output is shown below.</p>
+<p><img alt="Structured triangular mesh on unit square" src="../figures/unit_square_trimesh.png" /></p>
+<p>The nodes of this mesh can be obtained as <code>mesh.p</code>. This is of size <code>dim x nnodes</code>, where <code>dim</code> is the spatial dimension, 2 in this case, and <code>nnodes</code> is the number of nodes, 81 in this case. The element connectivity information can be obtained using <code>mesh.t</code>. This is of size <code>nne x nelt</code>, where <code>nne</code> is the number of nodes per element, 3 in this case, and <code>nelt</code> is the number of elements, 128 in this case. Note that the coordinates of node <code>i</code> are obtained as <code>mesh_1.p[:,i]</code> and the indices of the nodes belonging to element <code>k</code> are obtained as <code>mesh_1.t[:,k]</code>.</p>
+<p>For this problem, we want to rescale the domain to be of extent <span class="arithmatex">\(L \times L\)</span>. There are different ways of accomplishing this. A simple option is to just rescale the node locations of <code>mesh_1</code>:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">L</span> <span class="o">=</span> <span class="mf">2.5</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">mesh_unit_square</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">mesh_unit_square</span><span class="o">.</span><span class="n">p</span> <span class="o">*</span> <span class="n">L</span>
+</span></code></pre></div>
+<p>Alternatively, we can use the <code>init_tensor</code> method and pass two <code>numpy.ndarray</code> arrays to it to create the desired mesh directly.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">L</span> <span class="o">=</span> <span class="mf">2.5</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">Nx</span> <span class="o">=</span> <span class="mi">40</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">Ny</span> <span class="o">=</span> <span class="mi">40</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="n">mesh</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">MeshTri</span><span class="p">()</span><span class="o">.</span><span class="n">init_tensor</span><span class="p">(</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Ny</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="p">)</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="n">skplot</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="n">skplot</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span></code></pre></div>
+<p>This creates a structued mesh as shown below.</p>
+<p><img alt="Illustration of triangular mesh using init tensor method" src="../figures/trimesh_init_tensor.png" /></p>
+<p>We still have to label the boundaries according to the physical domains defined by the problem. <code>scikit-fem</code> provides a very convenient <code>with_boundaries</code> method for this purpose. The input to this function is a dictionary consisting of a boundary name key with a boolean function identifying the boundary region as its value. For the present problem, we need three distinct types of boundaries. Since we don't need to explicitly specify the zero Neumann boundary condition <span class="arithmatex">\(-\kappa \nabla T \cdot \mathbf{n} = 0\)</span> on <span class="arithmatex">\(\Gamma_W\)</span>, we only need to label the parts of the boundary where the temperature is specified and where convective heat transfer occurs.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">W</span> <span class="o">=</span> <span class="mf">0.5</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="k">def</span> <span class="nf">convective_boundary</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>        <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">,</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>        <span class="p">(</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>            <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">L</span><span class="p">),</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>            <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">W</span><span class="p">,</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>            <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">L</span> <span class="o">-</span> <span class="n">W</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>        <span class="p">)</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    <span class="p">)</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">with_boundaries</span><span class="p">({</span>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>    <span class="s1">&#39;Temperature&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">L</span><span class="p">),</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>    <span class="s1">&#39;Convective&#39;</span><span class="p">:</span> <span class="n">convective_boundary</span>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="p">})</span>
+</span></code></pre></div>
+<p>The code shown above create two labled boundary parts. The top edge of the square domain is labeled <code>'Temperature'</code> and a central strip on the right edge is labeled <code>'Convective'</code>. Notice how the functions that define these boundary regions are boolean functions that return <code>True</code> when a point is inside the desired boundary and <code>False</code> otherwise. For a simple boundary like <span class="arithmatex">\(\Gamma_T\)</span>, we can directly specify this function as a lambda function. For more complex boundaries like <span class="arithmatex">\(\Gamma_C\)</span>, we can create a separate function. The function <code>convective_boundary</code> shown above implements the logical condition 
+<script type="math/tex; mode=display">
+|x - L| < \epsilon \text{ and } y > W \text{ and } y < L - W. 
+</script>
+Here <span class="arithmatex">\(\mathbf{x} = (x,y)\)</span> are the coordinates of a point <span class="arithmatex">\(\mathbf{x}\)</span> in the domain, and <span class="arithmatex">\(\epsilon\)</span> is a small positive tolerance.  </p>
+<p>The nodes associated with a boundary label can be accessed as follows:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">mesh</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s1">&#39;Convective&#39;</span><span class="p">]</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">array</span><span class="p">([</span><span class="mi">4848</span><span class="p">,</span> <span class="mi">4849</span><span class="p">,</span> <span class="mi">4850</span><span class="p">,</span> <span class="mi">4851</span><span class="p">,</span> <span class="mi">4852</span><span class="p">,</span> <span class="mi">4853</span><span class="p">,</span> <span class="mi">4854</span><span class="p">,</span> <span class="mi">4855</span><span class="p">,</span> <span class="mi">4856</span><span class="p">,</span> <span class="mi">4857</span><span class="p">,</span> <span class="mi">4858</span><span class="p">,</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>       <span class="mi">4859</span><span class="p">,</span> <span class="mi">4860</span><span class="p">,</span> <span class="mi">4861</span><span class="p">,</span> <span class="mi">4862</span><span class="p">,</span> <span class="mi">4863</span><span class="p">,</span> <span class="mi">4864</span><span class="p">,</span> <span class="mi">4865</span><span class="p">,</span> <span class="mi">4866</span><span class="p">,</span> <span class="mi">4867</span><span class="p">,</span> <span class="mi">4868</span><span class="p">,</span> <span class="mi">4869</span><span class="p">,</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>       <span class="mi">4870</span><span class="p">,</span> <span class="mi">4871</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int32</span><span class="p">)</span>
+</span></code></pre></div>
+<h2 id="3-choose-element">3. Choose element</h2>
+<p>The maximum order of derivative for the trial and test functions in the weak form is 1. Since the mesh consists of triangular elements, a natural choice here is <span class="arithmatex">\(P_1\)</span> finite elements.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">elt</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">ElementTriP1</span><span class="p">()</span>
+</span></code></pre></div>
+<p><code>scikit-fem</code> comes built-in with a large list of elements that are commonly used. Further, there is a systematic naming convention---element names start with <code>Element</code>, followed by an abbreviated name for the element geometry, <code>Tri</code> in this case for a triangle, and finally the order of interpolation, <code>P1</code> in this case. A <span class="arithmatex">\(P_2\)</span> element is named as <code>ElementTriP2</code>, a bilinear element on a quadrilateral would is named as <code>ElementQuad1</code>, and so on.</p>
+<h2 id="4-set-up-finite-element-space">4. Set up finite element space</h2>
+<p>The next step is to set up the relevant finite element spaces. For the present problem, we need two distinct finite elements spaces. The first is straightforward:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">Vh</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">Basis</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">elt</span><span class="p">)</span>
+</span></code></pre></div>
+<p>The second one is a bit more subtle. Note that both the bilinear form <code>a_heat_2</code> and the linear form <code>l_heat_2</code> are to be integrated over part of the boundary, namely <span class="arithmatex">\(\Gamma_C\)</span>. We thus need a finite element space defined only on this boundary to perform the integrals. Given basis functions over the entire mesh, we can restrict them to the desired boundary region to get a <em>facet</em> basis. <code>scikit-fem</code> provides a <code>skfem.FacetBasis</code> class that specializes a given basis to a part of the boundary, as shown below.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">Vf</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">FacetBasis</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">elt</span><span class="p">,</span> <span class="n">facets</span><span class="o">=</span><span class="n">mesh</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s1">&#39;Convective&#39;</span><span class="p">])</span>
+</span></code></pre></div>
+<p>Notice how we are sending in the mesh object <code>mesh</code> and the element type over the whole domain <code>elt</code>, along with the facet over which we want to restrict the basis, namely <span class="arithmatex">\(\Gamma_C\)</span>. This is specified using the named argument <code>facets=mesh.boundaries['Convective']</code>. Once we form the facet basis, we can use it as any other regular basis object, as will be shown in the next step. </p>
+<h2 id="5-assemble-stiffness-matrix-and-load-vector">5. Assemble stiffness matrix and load vector</h2>
+<p>The next step in the solution process is the assembly of the stiffness matrix and load vector. Note that the bilinear form consists of two terms. The integrand for the first is stored in <code>a_heat_1</code>, while the integrand for the second is <code>a_heat_2</code>. The first integrand is to be integrated over the whole domain <span class="arithmatex">\(\Omega\)</span>, while the second is integrated only over the boundary <span class="arithmatex">\(\Gamma_C\)</span>. This is implemented in <code>scikit-fem</code> as follows:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">H</span> <span class="o">=</span> <span class="mf">5.0</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">K</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>        <span class="n">skfem</span><span class="o">.</span><span class="n">asm</span><span class="p">(</span><span class="n">a_heat_1</span><span class="p">,</span> <span class="n">Vh</span><span class="p">,</span> <span class="n">kappa</span><span class="o">=</span><span class="n">kappa</span><span class="p">)</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>        <span class="o">+</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>        <span class="n">skfem</span><span class="o">.</span><span class="n">asm</span><span class="p">(</span><span class="n">a_heat_2</span><span class="p">,</span> <span class="n">Vf</span><span class="p">,</span> <span class="n">H</span><span class="o">=</span><span class="n">H</span><span class="p">,</span> <span class="n">L</span><span class="o">=</span><span class="n">L</span><span class="p">,</span> <span class="n">W</span><span class="o">=</span><span class="n">W</span><span class="p">)</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="p">)</span>
+</span></code></pre></div>
+<p>Notice that the finite element space used in the first term is <code>Vh</code>, while that used in the second term is <code>Vf</code>. The assembly of the load vector uses a similar construction too.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">d</span> <span class="o">=</span> <span class="mf">0.75</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">R</span> <span class="o">=</span> <span class="mf">0.5</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">T1</span> <span class="o">=</span> <span class="mf">1.0</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">Q</span> <span class="o">=</span> <span class="mf">10.0</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="n">F</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>        <span class="n">skfem</span><span class="o">.</span><span class="n">asm</span><span class="p">(</span><span class="n">l_heat_1</span><span class="p">,</span> <span class="n">Vh</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="p">,</span> <span class="n">R</span><span class="o">=</span><span class="n">R</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="n">Q</span><span class="p">)</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>        <span class="o">+</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>        <span class="n">skfem</span><span class="o">.</span><span class="n">asm</span><span class="p">(</span><span class="n">l_heat_2</span><span class="p">,</span> <span class="n">Vf</span><span class="p">,</span> <span class="n">H</span><span class="o">=</span><span class="n">H</span><span class="p">,</span> <span class="n">L</span><span class="o">=</span><span class="n">L</span><span class="p">,</span> <span class="n">W</span><span class="o">=</span><span class="n">W</span><span class="p">,</span> <span class="n">T1</span><span class="o">=</span><span class="n">T1</span><span class="p">)</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>    <span class="p">)</span>
+</span></code></pre></div>
+<p>The pattern here should be evident. For weak forms consisting of several terms each of which are integrated over different regions, we need to specify a separate <code>skfem.Basis</code> or <code>skfem.FacetBasis</code> object for each region, assemble the terms individually, and combine them linearly.</p>
+<h2 id="6-apply-boundary-conditions">6. Apply boundary conditions</h2>
+<p>Recall that only the Dirichlet boundary conditions need to be specified explicitly for the finite element method. In the present case, we have a non-zero Dirichlet boundary condition on the top face <span class="arithmatex">\(\Gamma_T\)</span>, where the temperature is specified as <span class="arithmatex">\(T = T_0\)</span>. Non-zero dirichlet boundary conditions can be specified by means of the named argument <code>x=</code> in <code>skfem.condense</code>, as shown below.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">T0</span> <span class="o">=</span> <span class="mf">10.0</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">dirichlet_dofs</span> <span class="o">=</span> <span class="n">Vh</span><span class="o">.</span><span class="n">get_dofs</span><span class="p">(</span><span class="s1">&#39;Temperature&#39;</span><span class="p">)</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">T_dirichlet</span> <span class="o">=</span> <span class="n">Vh</span><span class="o">.</span><span class="n">zeros</span><span class="p">()</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="n">T_dirichlet</span><span class="p">[</span><span class="n">dirichlet_dofs</span><span class="o">.</span><span class="n">all</span><span class="p">()]</span> <span class="o">=</span> <span class="n">T0</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="n">solver_data</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">condense</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">T_dirichlet</span><span class="p">,</span> <span class="n">D</span><span class="o">=</span><span class="n">dirichlet_dofs</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Several points need to be understood here. First, the degrees of freedom corresponding to a labeled part of the boundary can be extracted using the <code>skfem.Basis.get_dofs</code> function with the label as an argument---this returns a <code>numpy.ndararray</code> array. The code <code>dirichlet_dofs = Vh.get_dofs('Temperature')</code> does this. To specify the temperatue on this part of the boundary, we need to first create a zero <code>numpy.ndarray</code> array of the same size as the number of degrees of freedom in the finite element space. This is what the line <code>T_dirichlet = Vh.zeros()</code> does. We then set the specified temperature values only at the Dirichlet degrees of freedom extracted earlier using <code>T_dirichlet[dirichlet_dofs.all()] = T0</code>. The object <code>dirichlet_dofs</code> is not of type <code>numpy.ndarray</code>, but we can use the <code>.all()</code> method to get that. Note also that if the specified boundary temperature is spatially non-homogeneous, we can also easily set that by modifying the <code>T_dirichlet</code> array accordingly. Finally, we specify the non-zero Dirichlet boundary condition by passing the <code>T_dirichlet</code> array as <code>x=T_dirichlet</code> to the <code>skfem.condense</code> function. If the argument <code>x=...</code> is not specfied, <code>scikit-fem</code> assigns a zero value by default to the degrees of freedom passed via the <code>D=...</code> argument. </p>
+<h2 id="7-solve-discrete-equations">7. Solve discrete equations</h2>
+<p>The solution process is identical to what we saw in the one-dimensional example:</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">Th</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="o">*</span><span class="n">solver_data</span><span class="p">)</span>
+</span></code></pre></div>
+<h2 id="8-post-processing">8. Post-processing</h2>
+<p>Let us first plot the solution. </p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">skplot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">Vh</span><span class="p">,</span> <span class="n">Th</span><span class="p">,</span> <span class="n">shading</span><span class="o">=</span><span class="s1">&#39;gouraud&#39;</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="n">skplot</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span></code></pre></div>
+<p>For the specific numerical values listed above, this should show a plot like the one shown below. </p>
+<p><img alt="Solution of the heat equation" src="../figures/heat2d_solution.png" /></p>
+<p>In addition to plotting the temperature, we also wish to compute the temperature at 5 specific points as indicated in the problem statement. The <code>skfem.Basis.probes</code> function helps us compute this---the basic approach is the same as explained in the previous example.</p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">x_probes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>        <span class="p">[</span><span class="n">d</span><span class="p">,</span> <span class="n">L</span><span class="o">-</span><span class="n">d</span><span class="p">,</span> <span class="n">L</span><span class="o">-</span><span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">L</span><span class="o">/</span><span class="mi">2</span><span class="p">],</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>        <span class="p">[</span><span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">L</span><span class="o">-</span><span class="n">d</span><span class="p">,</span> <span class="n">L</span><span class="o">-</span><span class="n">d</span><span class="p">,</span> <span class="n">L</span><span class="o">/</span><span class="mi">2</span><span class="p">]</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="p">])</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="n">Vh_probes</span> <span class="o">=</span> <span class="n">Vh</span><span class="o">.</span><span class="n">probes</span><span class="p">(</span><span class="n">x_probes</span><span class="p">)</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>    <span class="n">T_probes</span> <span class="o">=</span> <span class="n">Vh_probes</span> <span class="o">@</span> <span class="n">Th</span>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>    <span class="k">for</span> <span class="n">i_probe</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x_probes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Temperature at (</span><span class="si">{</span><span class="n">x_probes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">i_probe</span><span class="p">]</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">x_probes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">i_probe</span><span class="p">]</span><span class="si">}</span><span class="s1">) = </span><span class="si">{</span><span class="n">T_probes</span><span class="p">[</span><span class="n">i_probe</span><span class="p">]</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Note that in this case, <code>x_probes</code> is a <code>numpy.ndarray</code> of size <code>(2,5)</code>. For the present case, you should see the following output.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>Temperature at (0.75, 0.75) = 15.71
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>Temperature at (1.75, 0.75) = 14.36
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>Temperature at (1.75, 1.75) = 14.26
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>Temperature at (0.75, 1.75) = 15.43
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>Temperature at (1.25, 1.25) = 15.27
+</span></code></pre></div>
+<p>The full code is provided below. </p>
+<div class="language-py highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="kn">import</span> <span class="nn">skfem</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="kn">import</span> <span class="nn">skfem.visuals.matplotlib</span> <span class="k">as</span> <span class="nn">skplot</span>
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="kn">from</span> <span class="nn">skfem.helpers</span> <span class="kn">import</span> <span class="n">dot</span><span class="p">,</span> <span class="n">grad</span>
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>
+</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>
+</span><span id="__span-17-10"><a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="nd">@skfem</span><span class="o">.</span><span class="n">BilinearForm</span>
+</span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a><span class="k">def</span> <span class="nf">a_heat_1</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+</span><span id="__span-17-12"><a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>    <span class="n">kappa</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;kappa&#39;</span><span class="p">]</span>
+</span><span id="__span-17-13"><a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a>    <span class="k">return</span> <span class="n">kappa</span> <span class="o">*</span> <span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">T</span><span class="p">),</span> <span class="n">grad</span><span class="p">(</span><span class="n">eta</span><span class="p">))</span>
+</span><span id="__span-17-14"><a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a>
+</span><span id="__span-17-15"><a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a><span class="nd">@skfem</span><span class="o">.</span><span class="n">BilinearForm</span>
+</span><span id="__span-17-16"><a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a><span class="k">def</span> <span class="nf">a_heat_2</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+</span><span id="__span-17-17"><a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a>    <span class="n">H</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span>
+</span><span id="__span-17-18"><a id="__codelineno-17-18" name="__codelineno-17-18" href="#__codelineno-17-18"></a>    <span class="n">L</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">]</span>
+</span><span id="__span-17-19"><a id="__codelineno-17-19" name="__codelineno-17-19" href="#__codelineno-17-19"></a>    <span class="n">W</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;W&#39;</span><span class="p">]</span>
+</span><span id="__span-17-20"><a id="__codelineno-17-20" name="__codelineno-17-20" href="#__codelineno-17-20"></a>    <span class="n">lC</span> <span class="o">=</span> <span class="n">L</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">W</span>
+</span><span id="__span-17-21"><a id="__codelineno-17-21" name="__codelineno-17-21" href="#__codelineno-17-21"></a>    <span class="k">return</span> <span class="n">H</span><span class="o">*</span><span class="n">lC</span><span class="o">*</span><span class="n">T</span><span class="o">*</span><span class="n">eta</span>
+</span><span id="__span-17-22"><a id="__codelineno-17-22" name="__codelineno-17-22" href="#__codelineno-17-22"></a>
+</span><span id="__span-17-23"><a id="__codelineno-17-23" name="__codelineno-17-23" href="#__codelineno-17-23"></a>
+</span><span id="__span-17-24"><a id="__codelineno-17-24" name="__codelineno-17-24" href="#__codelineno-17-24"></a><span class="k">def</span> <span class="nf">q</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">Q</span><span class="p">):</span>
+</span><span id="__span-17-25"><a id="__codelineno-17-25" name="__codelineno-17-25" href="#__codelineno-17-25"></a>    <span class="k">return</span> <span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">d</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">d</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">R</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">Q</span>
+</span><span id="__span-17-26"><a id="__codelineno-17-26" name="__codelineno-17-26" href="#__codelineno-17-26"></a>
+</span><span id="__span-17-27"><a id="__codelineno-17-27" name="__codelineno-17-27" href="#__codelineno-17-27"></a><span class="nd">@skfem</span><span class="o">.</span><span class="n">LinearForm</span>
+</span><span id="__span-17-28"><a id="__codelineno-17-28" name="__codelineno-17-28" href="#__codelineno-17-28"></a><span class="k">def</span> <span class="nf">l_heat_1</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+</span><span id="__span-17-29"><a id="__codelineno-17-29" name="__codelineno-17-29" href="#__codelineno-17-29"></a>    <span class="n">d</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;d&#39;</span><span class="p">]</span>
+</span><span id="__span-17-30"><a id="__codelineno-17-30" name="__codelineno-17-30" href="#__codelineno-17-30"></a>    <span class="n">R</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;R&#39;</span><span class="p">]</span>
+</span><span id="__span-17-31"><a id="__codelineno-17-31" name="__codelineno-17-31" href="#__codelineno-17-31"></a>    <span class="n">Q</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;Q&#39;</span><span class="p">]</span>
+</span><span id="__span-17-32"><a id="__codelineno-17-32" name="__codelineno-17-32" href="#__codelineno-17-32"></a>    <span class="n">x</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+</span><span id="__span-17-33"><a id="__codelineno-17-33" name="__codelineno-17-33" href="#__codelineno-17-33"></a>    <span class="k">return</span> <span class="n">q</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">Q</span><span class="p">)</span> <span class="o">*</span> <span class="n">eta</span>
+</span><span id="__span-17-34"><a id="__codelineno-17-34" name="__codelineno-17-34" href="#__codelineno-17-34"></a>
+</span><span id="__span-17-35"><a id="__codelineno-17-35" name="__codelineno-17-35" href="#__codelineno-17-35"></a><span class="nd">@skfem</span><span class="o">.</span><span class="n">LinearForm</span>
+</span><span id="__span-17-36"><a id="__codelineno-17-36" name="__codelineno-17-36" href="#__codelineno-17-36"></a><span class="k">def</span> <span class="nf">l_heat_2</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+</span><span id="__span-17-37"><a id="__codelineno-17-37" name="__codelineno-17-37" href="#__codelineno-17-37"></a>    <span class="n">H</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">]</span>
+</span><span id="__span-17-38"><a id="__codelineno-17-38" name="__codelineno-17-38" href="#__codelineno-17-38"></a>    <span class="n">L</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">]</span>
+</span><span id="__span-17-39"><a id="__codelineno-17-39" name="__codelineno-17-39" href="#__codelineno-17-39"></a>    <span class="n">W</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;W&#39;</span><span class="p">]</span>
+</span><span id="__span-17-40"><a id="__codelineno-17-40" name="__codelineno-17-40" href="#__codelineno-17-40"></a>    <span class="n">lC</span> <span class="o">=</span> <span class="n">L</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">W</span>
+</span><span id="__span-17-41"><a id="__codelineno-17-41" name="__codelineno-17-41" href="#__codelineno-17-41"></a>    <span class="n">T1</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;T1&#39;</span><span class="p">]</span>
+</span><span id="__span-17-42"><a id="__codelineno-17-42" name="__codelineno-17-42" href="#__codelineno-17-42"></a>    <span class="k">return</span> <span class="n">H</span><span class="o">*</span><span class="n">lC</span><span class="o">*</span><span class="n">T1</span><span class="o">*</span><span class="n">eta</span>
+</span><span id="__span-17-43"><a id="__codelineno-17-43" name="__codelineno-17-43" href="#__codelineno-17-43"></a>
+</span><span id="__span-17-44"><a id="__codelineno-17-44" name="__codelineno-17-44" href="#__codelineno-17-44"></a>
+</span><span id="__span-17-45"><a id="__codelineno-17-45" name="__codelineno-17-45" href="#__codelineno-17-45"></a><span class="k">def</span> <span class="nf">convective_boundary</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+</span><span id="__span-17-46"><a id="__codelineno-17-46" name="__codelineno-17-46" href="#__codelineno-17-46"></a>    <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span>
+</span><span id="__span-17-47"><a id="__codelineno-17-47" name="__codelineno-17-47" href="#__codelineno-17-47"></a>        <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">,</span>
+</span><span id="__span-17-48"><a id="__codelineno-17-48" name="__codelineno-17-48" href="#__codelineno-17-48"></a>        <span class="p">(</span>
+</span><span id="__span-17-49"><a id="__codelineno-17-49" name="__codelineno-17-49" href="#__codelineno-17-49"></a>            <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">L</span><span class="p">),</span>
+</span><span id="__span-17-50"><a id="__codelineno-17-50" name="__codelineno-17-50" href="#__codelineno-17-50"></a>            <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">W</span><span class="p">,</span>
+</span><span id="__span-17-51"><a id="__codelineno-17-51" name="__codelineno-17-51" href="#__codelineno-17-51"></a>            <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">L</span> <span class="o">-</span> <span class="n">W</span>
+</span><span id="__span-17-52"><a id="__codelineno-17-52" name="__codelineno-17-52" href="#__codelineno-17-52"></a>        <span class="p">)</span>
+</span><span id="__span-17-53"><a id="__codelineno-17-53" name="__codelineno-17-53" href="#__codelineno-17-53"></a>    <span class="p">)</span>
+</span><span id="__span-17-54"><a id="__codelineno-17-54" name="__codelineno-17-54" href="#__codelineno-17-54"></a>
+</span><span id="__span-17-55"><a id="__codelineno-17-55" name="__codelineno-17-55" href="#__codelineno-17-55"></a>
+</span><span id="__span-17-56"><a id="__codelineno-17-56" name="__codelineno-17-56" href="#__codelineno-17-56"></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+</span><span id="__span-17-57"><a id="__codelineno-17-57" name="__codelineno-17-57" href="#__codelineno-17-57"></a>    <span class="n">kappa</span> <span class="o">=</span> <span class="mf">1.0</span>
+</span><span id="__span-17-58"><a id="__codelineno-17-58" name="__codelineno-17-58" href="#__codelineno-17-58"></a>    <span class="n">H</span> <span class="o">=</span> <span class="mf">5.0</span>
+</span><span id="__span-17-59"><a id="__codelineno-17-59" name="__codelineno-17-59" href="#__codelineno-17-59"></a>    <span class="n">d</span> <span class="o">=</span> <span class="mf">0.75</span>
+</span><span id="__span-17-60"><a id="__codelineno-17-60" name="__codelineno-17-60" href="#__codelineno-17-60"></a>    <span class="n">R</span> <span class="o">=</span> <span class="mf">0.5</span>
+</span><span id="__span-17-61"><a id="__codelineno-17-61" name="__codelineno-17-61" href="#__codelineno-17-61"></a>    <span class="n">T0</span> <span class="o">=</span> <span class="mf">10.0</span>
+</span><span id="__span-17-62"><a id="__codelineno-17-62" name="__codelineno-17-62" href="#__codelineno-17-62"></a>    <span class="n">T1</span> <span class="o">=</span> <span class="mf">1.0</span>
+</span><span id="__span-17-63"><a id="__codelineno-17-63" name="__codelineno-17-63" href="#__codelineno-17-63"></a>    <span class="n">Q</span> <span class="o">=</span> <span class="mf">10.0</span>
+</span><span id="__span-17-64"><a id="__codelineno-17-64" name="__codelineno-17-64" href="#__codelineno-17-64"></a>
+</span><span id="__span-17-65"><a id="__codelineno-17-65" name="__codelineno-17-65" href="#__codelineno-17-65"></a>    <span class="n">L</span> <span class="o">=</span> <span class="mf">2.5</span>
+</span><span id="__span-17-66"><a id="__codelineno-17-66" name="__codelineno-17-66" href="#__codelineno-17-66"></a>    <span class="n">W</span> <span class="o">=</span> <span class="mf">0.5</span>
+</span><span id="__span-17-67"><a id="__codelineno-17-67" name="__codelineno-17-67" href="#__codelineno-17-67"></a>
+</span><span id="__span-17-68"><a id="__codelineno-17-68" name="__codelineno-17-68" href="#__codelineno-17-68"></a>    <span class="n">Nx</span> <span class="o">=</span> <span class="mi">40</span>
+</span><span id="__span-17-69"><a id="__codelineno-17-69" name="__codelineno-17-69" href="#__codelineno-17-69"></a>    <span class="n">Ny</span> <span class="o">=</span> <span class="mi">40</span>
+</span><span id="__span-17-70"><a id="__codelineno-17-70" name="__codelineno-17-70" href="#__codelineno-17-70"></a>
+</span><span id="__span-17-71"><a id="__codelineno-17-71" name="__codelineno-17-71" href="#__codelineno-17-71"></a>    <span class="n">mesh</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">MeshTri</span><span class="p">()</span><span class="o">.</span><span class="n">init_tensor</span><span class="p">(</span>
+</span><span id="__span-17-72"><a id="__codelineno-17-72" name="__codelineno-17-72" href="#__codelineno-17-72"></a>        <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Nx</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span>
+</span><span id="__span-17-73"><a id="__codelineno-17-73" name="__codelineno-17-73" href="#__codelineno-17-73"></a>        <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Ny</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+</span><span id="__span-17-74"><a id="__codelineno-17-74" name="__codelineno-17-74" href="#__codelineno-17-74"></a>    <span class="p">)</span>
+</span><span id="__span-17-75"><a id="__codelineno-17-75" name="__codelineno-17-75" href="#__codelineno-17-75"></a>
+</span><span id="__span-17-76"><a id="__codelineno-17-76" name="__codelineno-17-76" href="#__codelineno-17-76"></a>    <span class="n">skplot</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+</span><span id="__span-17-77"><a id="__codelineno-17-77" name="__codelineno-17-77" href="#__codelineno-17-77"></a>    <span class="n">skplot</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span><span id="__span-17-78"><a id="__codelineno-17-78" name="__codelineno-17-78" href="#__codelineno-17-78"></a>
+</span><span id="__span-17-79"><a id="__codelineno-17-79" name="__codelineno-17-79" href="#__codelineno-17-79"></a>    <span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">with_boundaries</span><span class="p">({</span>
+</span><span id="__span-17-80"><a id="__codelineno-17-80" name="__codelineno-17-80" href="#__codelineno-17-80"></a>        <span class="s1">&#39;Temperature&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">L</span><span class="p">),</span>
+</span><span id="__span-17-81"><a id="__codelineno-17-81" name="__codelineno-17-81" href="#__codelineno-17-81"></a>        <span class="s1">&#39;Convective&#39;</span><span class="p">:</span> <span class="n">convective_boundary</span>
+</span><span id="__span-17-82"><a id="__codelineno-17-82" name="__codelineno-17-82" href="#__codelineno-17-82"></a>    <span class="p">})</span>
+</span><span id="__span-17-83"><a id="__codelineno-17-83" name="__codelineno-17-83" href="#__codelineno-17-83"></a>
+</span><span id="__span-17-84"><a id="__codelineno-17-84" name="__codelineno-17-84" href="#__codelineno-17-84"></a>    <span class="n">elt</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">ElementTriP1</span><span class="p">()</span>
+</span><span id="__span-17-85"><a id="__codelineno-17-85" name="__codelineno-17-85" href="#__codelineno-17-85"></a>
+</span><span id="__span-17-86"><a id="__codelineno-17-86" name="__codelineno-17-86" href="#__codelineno-17-86"></a>    <span class="n">Vh</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">Basis</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">elt</span><span class="p">)</span>
+</span><span id="__span-17-87"><a id="__codelineno-17-87" name="__codelineno-17-87" href="#__codelineno-17-87"></a>    <span class="n">Vf</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">FacetBasis</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">elt</span><span class="p">,</span> <span class="n">facets</span><span class="o">=</span><span class="n">mesh</span><span class="o">.</span><span class="n">boundaries</span><span class="p">[</span><span class="s1">&#39;Convective&#39;</span><span class="p">])</span>
+</span><span id="__span-17-88"><a id="__codelineno-17-88" name="__codelineno-17-88" href="#__codelineno-17-88"></a>
+</span><span id="__span-17-89"><a id="__codelineno-17-89" name="__codelineno-17-89" href="#__codelineno-17-89"></a>    <span class="n">K</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="__span-17-90"><a id="__codelineno-17-90" name="__codelineno-17-90" href="#__codelineno-17-90"></a>        <span class="n">skfem</span><span class="o">.</span><span class="n">asm</span><span class="p">(</span>
+</span><span id="__span-17-91"><a id="__codelineno-17-91" name="__codelineno-17-91" href="#__codelineno-17-91"></a>            <span class="n">a_heat_1</span><span class="p">,</span>
+</span><span id="__span-17-92"><a id="__codelineno-17-92" name="__codelineno-17-92" href="#__codelineno-17-92"></a>            <span class="n">Vh</span><span class="p">,</span>
+</span><span id="__span-17-93"><a id="__codelineno-17-93" name="__codelineno-17-93" href="#__codelineno-17-93"></a>            <span class="n">kappa</span><span class="o">=</span><span class="n">kappa</span>
+</span><span id="__span-17-94"><a id="__codelineno-17-94" name="__codelineno-17-94" href="#__codelineno-17-94"></a>        <span class="p">)</span>
+</span><span id="__span-17-95"><a id="__codelineno-17-95" name="__codelineno-17-95" href="#__codelineno-17-95"></a>        <span class="o">+</span>
+</span><span id="__span-17-96"><a id="__codelineno-17-96" name="__codelineno-17-96" href="#__codelineno-17-96"></a>        <span class="n">skfem</span><span class="o">.</span><span class="n">asm</span><span class="p">(</span>
+</span><span id="__span-17-97"><a id="__codelineno-17-97" name="__codelineno-17-97" href="#__codelineno-17-97"></a>            <span class="n">a_heat_2</span><span class="p">,</span>
+</span><span id="__span-17-98"><a id="__codelineno-17-98" name="__codelineno-17-98" href="#__codelineno-17-98"></a>            <span class="n">Vf</span><span class="p">,</span>
+</span><span id="__span-17-99"><a id="__codelineno-17-99" name="__codelineno-17-99" href="#__codelineno-17-99"></a>            <span class="n">H</span><span class="o">=</span><span class="n">H</span><span class="p">,</span>
+</span><span id="__span-17-100"><a id="__codelineno-17-100" name="__codelineno-17-100" href="#__codelineno-17-100"></a>            <span class="n">L</span><span class="o">=</span><span class="n">L</span><span class="p">,</span>
+</span><span id="__span-17-101"><a id="__codelineno-17-101" name="__codelineno-17-101" href="#__codelineno-17-101"></a>            <span class="n">W</span><span class="o">=</span><span class="n">W</span>
+</span><span id="__span-17-102"><a id="__codelineno-17-102" name="__codelineno-17-102" href="#__codelineno-17-102"></a>        <span class="p">)</span>
+</span><span id="__span-17-103"><a id="__codelineno-17-103" name="__codelineno-17-103" href="#__codelineno-17-103"></a>    <span class="p">)</span>
+</span><span id="__span-17-104"><a id="__codelineno-17-104" name="__codelineno-17-104" href="#__codelineno-17-104"></a>    <span class="n">F</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="__span-17-105"><a id="__codelineno-17-105" name="__codelineno-17-105" href="#__codelineno-17-105"></a>        <span class="n">skfem</span><span class="o">.</span><span class="n">asm</span><span class="p">(</span>
+</span><span id="__span-17-106"><a id="__codelineno-17-106" name="__codelineno-17-106" href="#__codelineno-17-106"></a>            <span class="n">l_heat_1</span><span class="p">,</span>
+</span><span id="__span-17-107"><a id="__codelineno-17-107" name="__codelineno-17-107" href="#__codelineno-17-107"></a>            <span class="n">Vh</span><span class="p">,</span>
+</span><span id="__span-17-108"><a id="__codelineno-17-108" name="__codelineno-17-108" href="#__codelineno-17-108"></a>            <span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="p">,</span>
+</span><span id="__span-17-109"><a id="__codelineno-17-109" name="__codelineno-17-109" href="#__codelineno-17-109"></a>            <span class="n">R</span><span class="o">=</span><span class="n">R</span><span class="p">,</span>
+</span><span id="__span-17-110"><a id="__codelineno-17-110" name="__codelineno-17-110" href="#__codelineno-17-110"></a>            <span class="n">Q</span><span class="o">=</span><span class="n">Q</span>
+</span><span id="__span-17-111"><a id="__codelineno-17-111" name="__codelineno-17-111" href="#__codelineno-17-111"></a>        <span class="p">)</span>
+</span><span id="__span-17-112"><a id="__codelineno-17-112" name="__codelineno-17-112" href="#__codelineno-17-112"></a>        <span class="o">+</span>
+</span><span id="__span-17-113"><a id="__codelineno-17-113" name="__codelineno-17-113" href="#__codelineno-17-113"></a>        <span class="n">skfem</span><span class="o">.</span><span class="n">asm</span><span class="p">(</span>
+</span><span id="__span-17-114"><a id="__codelineno-17-114" name="__codelineno-17-114" href="#__codelineno-17-114"></a>            <span class="n">l_heat_2</span><span class="p">,</span>
+</span><span id="__span-17-115"><a id="__codelineno-17-115" name="__codelineno-17-115" href="#__codelineno-17-115"></a>            <span class="n">Vf</span><span class="p">,</span>
+</span><span id="__span-17-116"><a id="__codelineno-17-116" name="__codelineno-17-116" href="#__codelineno-17-116"></a>            <span class="n">H</span><span class="o">=</span><span class="n">H</span><span class="p">,</span>
+</span><span id="__span-17-117"><a id="__codelineno-17-117" name="__codelineno-17-117" href="#__codelineno-17-117"></a>            <span class="n">L</span><span class="o">=</span><span class="n">L</span><span class="p">,</span>
+</span><span id="__span-17-118"><a id="__codelineno-17-118" name="__codelineno-17-118" href="#__codelineno-17-118"></a>            <span class="n">W</span><span class="o">=</span><span class="n">W</span><span class="p">,</span>
+</span><span id="__span-17-119"><a id="__codelineno-17-119" name="__codelineno-17-119" href="#__codelineno-17-119"></a>            <span class="n">T1</span><span class="o">=</span><span class="n">T1</span>
+</span><span id="__span-17-120"><a id="__codelineno-17-120" name="__codelineno-17-120" href="#__codelineno-17-120"></a>        <span class="p">)</span>
+</span><span id="__span-17-121"><a id="__codelineno-17-121" name="__codelineno-17-121" href="#__codelineno-17-121"></a>    <span class="p">)</span>
+</span><span id="__span-17-122"><a id="__codelineno-17-122" name="__codelineno-17-122" href="#__codelineno-17-122"></a>
+</span><span id="__span-17-123"><a id="__codelineno-17-123" name="__codelineno-17-123" href="#__codelineno-17-123"></a>    <span class="n">dirichlet_dofs</span> <span class="o">=</span> <span class="n">Vh</span><span class="o">.</span><span class="n">get_dofs</span><span class="p">(</span><span class="s1">&#39;Temperature&#39;</span><span class="p">)</span>
+</span><span id="__span-17-124"><a id="__codelineno-17-124" name="__codelineno-17-124" href="#__codelineno-17-124"></a>    <span class="n">T_dirichlet</span> <span class="o">=</span> <span class="n">Vh</span><span class="o">.</span><span class="n">zeros</span><span class="p">()</span>
+</span><span id="__span-17-125"><a id="__codelineno-17-125" name="__codelineno-17-125" href="#__codelineno-17-125"></a>    <span class="n">T_dirichlet</span><span class="p">[</span><span class="n">dirichlet_dofs</span><span class="o">.</span><span class="n">all</span><span class="p">()]</span> <span class="o">=</span> <span class="n">T0</span>
+</span><span id="__span-17-126"><a id="__codelineno-17-126" name="__codelineno-17-126" href="#__codelineno-17-126"></a>
+</span><span id="__span-17-127"><a id="__codelineno-17-127" name="__codelineno-17-127" href="#__codelineno-17-127"></a>    <span class="n">solver_data</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">condense</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">T_dirichlet</span><span class="p">,</span> <span class="n">D</span><span class="o">=</span><span class="n">dirichlet_dofs</span><span class="p">)</span>
+</span><span id="__span-17-128"><a id="__codelineno-17-128" name="__codelineno-17-128" href="#__codelineno-17-128"></a>
+</span><span id="__span-17-129"><a id="__codelineno-17-129" name="__codelineno-17-129" href="#__codelineno-17-129"></a>    <span class="n">Th</span> <span class="o">=</span> <span class="n">skfem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="o">*</span><span class="n">solver_data</span><span class="p">)</span>
+</span><span id="__span-17-130"><a id="__codelineno-17-130" name="__codelineno-17-130" href="#__codelineno-17-130"></a>
+</span><span id="__span-17-131"><a id="__codelineno-17-131" name="__codelineno-17-131" href="#__codelineno-17-131"></a>    <span class="n">skplot</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">Vh</span><span class="p">,</span> <span class="n">Th</span><span class="p">,</span> <span class="n">shading</span><span class="o">=</span><span class="s1">&#39;gouraud&#39;</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+</span><span id="__span-17-132"><a id="__codelineno-17-132" name="__codelineno-17-132" href="#__codelineno-17-132"></a>    <span class="n">skplot</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span><span id="__span-17-133"><a id="__codelineno-17-133" name="__codelineno-17-133" href="#__codelineno-17-133"></a>
+</span><span id="__span-17-134"><a id="__codelineno-17-134" name="__codelineno-17-134" href="#__codelineno-17-134"></a>    <span class="n">x_probes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+</span><span id="__span-17-135"><a id="__codelineno-17-135" name="__codelineno-17-135" href="#__codelineno-17-135"></a>        <span class="p">[</span><span class="n">d</span><span class="p">,</span> <span class="n">L</span><span class="o">-</span><span class="n">d</span><span class="p">,</span> <span class="n">L</span><span class="o">-</span><span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">L</span><span class="o">/</span><span class="mi">2</span><span class="p">],</span>
+</span><span id="__span-17-136"><a id="__codelineno-17-136" name="__codelineno-17-136" href="#__codelineno-17-136"></a>        <span class="p">[</span><span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">L</span><span class="o">-</span><span class="n">d</span><span class="p">,</span> <span class="n">L</span><span class="o">-</span><span class="n">d</span><span class="p">,</span> <span class="n">L</span><span class="o">/</span><span class="mi">2</span><span class="p">]</span>
+</span><span id="__span-17-137"><a id="__codelineno-17-137" name="__codelineno-17-137" href="#__codelineno-17-137"></a>    <span class="p">])</span>
+</span><span id="__span-17-138"><a id="__codelineno-17-138" name="__codelineno-17-138" href="#__codelineno-17-138"></a>    <span class="n">Vh_probes</span> <span class="o">=</span> <span class="n">Vh</span><span class="o">.</span><span class="n">probes</span><span class="p">(</span><span class="n">x_probes</span><span class="p">)</span>
+</span><span id="__span-17-139"><a id="__codelineno-17-139" name="__codelineno-17-139" href="#__codelineno-17-139"></a>    <span class="n">T_probes</span> <span class="o">=</span> <span class="n">Vh_probes</span> <span class="o">@</span> <span class="n">Th</span>
+</span><span id="__span-17-140"><a id="__codelineno-17-140" name="__codelineno-17-140" href="#__codelineno-17-140"></a>
+</span><span id="__span-17-141"><a id="__codelineno-17-141" name="__codelineno-17-141" href="#__codelineno-17-141"></a>    <span class="k">for</span> <span class="n">i_probe</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x_probes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+</span><span id="__span-17-142"><a id="__codelineno-17-142" name="__codelineno-17-142" href="#__codelineno-17-142"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Temperature at (</span><span class="si">{</span><span class="n">x_probes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">i_probe</span><span class="p">]</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">x_probes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">i_probe</span><span class="p">]</span><span class="si">}</span><span class="s1">) = </span><span class="si">{</span><span class="n">T_probes</span><span class="p">[</span><span class="n">i_probe</span><span class="p">]</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span></code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "content.code.select"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.081f42fc.min.js"></script>
+      
+        <script src="../js/print-site.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      
+        <script src="../mathjaxhelper.js"></script>
+      
+    
+  </body>
+</html>
