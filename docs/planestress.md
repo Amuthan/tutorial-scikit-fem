@@ -151,10 +151,10 @@ This should produce the following output---the resolution of the figure shown he
 
 ![Triangular mesh for dogbone with hole](./figures/dogbone_mesh.png)
 
-Labels for various boundaries of the mesh, if already defined, can be accessed using the `mesh.boundaries` command. This returns a dictionary where the keys are the label names, and the corresponding values are the nodes associated with that label. If you want to just view the names of the labels, you can use `mesh.boundaries.keys()`. 
+Labels for various boundaries of the mesh, if already defined, can be accessed using the `mesh.boundaries` command. This returns a dictionary where the keys are the label names, and the corresponding values are the edges associated with that label. If you want to just view the names of the labels, you can use `mesh.boundaries.keys()`. 
 
 ## 3. Choose element type
-All the PDEs we considered so far are *scalar* PDEs. For the linear elasticity problem considered here, the unknown displacement field is a *vector field* $\mathbf{u}(x,y) = (u(x,y), v(x,y))$. While we can represent this using two scalar fields, it is convenient conceptually, mathematically, and numerically, to treat it as a vector field directly. Let us see how we handle vector fields using `scikit-fem`. To start with, let us create a *scalar* eleemnt type, which is what we have been using so far.
+All the PDEs we considered so far are *scalar* PDEs. For the linear elasticity problem considered here, the unknown displacement field is a *vector field* $\mathbf{u}(x,y) = (u(x,y), v(x,y))$. While we can represent this using two scalar fields, it is convenient conceptually, mathematically, and numerically, to treat it as a vector field directly. Let us see how we handle vector fields using `scikit-fem`. To start with, let us create a *scalar* element type, which is what we have been using so far.
 
 ``` py
 elt_s = skfem.ElementTriP1()

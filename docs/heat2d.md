@@ -210,7 +210,7 @@ $$
 $$
 Here $\mathbf{x} = (x,y)$ are the coordinates of a point $\mathbf{x}$ in the domain, and $\epsilon$ is a small positive tolerance.  
 
-The nodes associated with a boundary label can be accessed as follows:
+The edges associated with a boundary label can be accessed as follows:
 
 ``` py
 >>> mesh.boundaries['Convective']
@@ -218,6 +218,8 @@ array([4848, 4849, 4850, 4851, 4852, 4853, 4854, 4855, 4856, 4857, 4858,
        4859, 4860, 4861, 4862, 4863, 4864, 4865, 4866, 4867, 4868, 4869,
        4870, 4871], dtype=int32)
 ```
+
+To access the node numbers, we need to first extract the nodes associated with each of these facets, and then extract the location of those nodes. For instance, the nodes associated with the edges in the `’Convective’` boundary can be obtained using `mesh.facets[:, mesh.boundaries[‘Convective’]`. We can then call `mesh.p` with the appropriate node index to get the location of the desired nodes.
 
 ## 3. Choose element 
 The maximum order of derivative for the trial and test functions in the weak form is 1. Since the mesh consists of triangular elements, a natural choice here is $P_1$ finite elements.
